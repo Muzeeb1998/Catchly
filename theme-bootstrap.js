@@ -8,7 +8,7 @@
 // Must be an external file — MV3 extension_pages CSP blocks inline scripts.
 
 (function () {
-  var VALID = { system: 1, editorial: 1, utility: 1 };
+  var VALID = { system: 1, editorial: 1, utility: 1, dark: 1 };
   function apply(t) {
     if (!VALID[t]) t = 'system';
     document.documentElement.setAttribute('data-theme', t);

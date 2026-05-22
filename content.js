@@ -12,7 +12,7 @@
   // whenever the popup broadcasts 'theme_changed'. Applied to the toast
   // root element when one is built / on the fly when one is open.
   let __currentTheme = 'system';
-  const __VALID_THEMES = { system: 1, editorial: 1, utility: 1 };
+  const __VALID_THEMES = { system: 1, editorial: 1, utility: 1, dark: 1 };
   try {
     chrome.storage.local.get('settings_v1', (res) => {
       const t = res && res.settings_v1 && res.settings_v1.theme;

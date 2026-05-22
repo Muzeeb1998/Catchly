@@ -58,6 +58,22 @@
   }
 }
 
+/* Forced dark variant — same tokens as the prefers-color-scheme dark block
+   above, but applied unconditionally when the user picks "Dark" from the
+   theme dropdown so the toast renders dark regardless of OS setting. */
+.sentry-toast[data-theme="dark"] {
+  --s-canvas:        #0B1220 !important;
+  --s-surface:       #111A2E !important;
+  --s-border:        #1F2C46 !important;
+  --s-border-strong: #2C3C5C !important;
+  --s-ink:           #E6ECF5 !important;
+  --s-ink-2:         #B6C0D2 !important;
+  --s-muted:         #8F9BB3 !important;
+  --s-primary:       #5A86FF !important;
+  --s-primary-hover: #4775FF !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+}
+
 /* Utility theme for the in-page toast — matches popup/options Utility palette.
    Selector is the same .sentry-toast root but qualified with [data-theme="utility"]
    which content.js sets when the user's stored theme is "utility". */

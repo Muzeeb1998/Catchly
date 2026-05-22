@@ -91,7 +91,7 @@ function applyStoredTheme() {
 // old segmented control collapse to 'system'. Always sets the attribute so
 // CSS rules selecting [data-theme="..."] can match deterministically.
 function setThemeAttr(theme) {
-  const valid = { system: 1, editorial: 1, utility: 1 };
+  const valid = { system: 1, editorial: 1, utility: 1, dark: 1 };
   const next = valid[theme] ? theme : 'system';
   document.documentElement.setAttribute('data-theme', next);
 }
