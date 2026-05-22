@@ -314,6 +314,15 @@ function renderCalendar() {
       month === today.getMonth() &&
       day === today.getDate();
     if (isToday) el.classList.add('cal-today');
+    el.setAttribute('role', 'gridcell');
+    const dateLabel = new Date(year, month, day).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    if (buckets[day]) {
+      const names = buckets[day].map(s => s.name).join(', ');
+      el.setAttribute('aria-label', `${dateLabel}: ${names}`);
+      el.setAttribute('tabindex', '0');
+    } else {
+      el.setAttribute('aria-label', dateLabel);
+    }
     el.innerHTML = `<div>${day}</div>`;
     if (buckets[day]) {
       const dotsDiv = document.createElement('div');

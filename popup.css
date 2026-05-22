@@ -437,6 +437,11 @@ input:focus, select:focus,
   color: var(--ink-2);
   position: relative;
 }
+.cal-grid > div:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  z-index: 1;
+}
 .cal-other { background: var(--surface) !important; color: transparent !important; }
 .cal-today {
   background: var(--primary-soft) !important;
