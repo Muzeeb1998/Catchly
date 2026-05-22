@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Subscription Sentry",
+  "name": "Catchly",
   "version": "0.1.0",
   "description": "Privacy-first subscription tracker. Auto-detects subs at checkout, warns before renewal, flags price hikes, guides cancellation. Local-only — no bank login, no data sold.",
   "permissions": [
@@ -19,7 +19,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Subscription Sentry",
+    "default_title": "Catchly",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

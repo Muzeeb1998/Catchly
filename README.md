@@ -1,4 +1,4 @@
-# Subscription Sentry
+# Catchly
 
 A privacy-first Chrome extension that tracks your subscriptions without ever asking for your bank login. Detects sign-ups on supported services, warns you before renewals, flags price hikes, and shows you exactly where to cancel.
 
@@ -11,7 +11,7 @@ This is an MVP starter — built to be loaded, used, and forked. Not a polished 
 1. Open `chrome://extensions/` in Chrome, Brave, or Edge.
 2. Toggle **Developer mode** on (top right).
 3. Click **Load unpacked** and select this folder.
-4. The Sentry icon appears in your toolbar. Click the puzzle-piece icon and **pin Sentry** so the renewal-countdown badge is always visible.
+4. The Catchly icon appears in your toolbar. Click the puzzle-piece icon and **pin Catchly** so the renewal-countdown badge is always visible.
 5. On first install a welcome tab opens with a "Load sample data" button — recommended for a quick tour.
 6. When Chrome asks, **allow notifications** so renewal/trial reminders work.
 
@@ -33,7 +33,7 @@ All 12 features from the v1 starter kit are functional code, not stubs:
 | 8 | **Shadow-charge detector** | Sample data includes Audible last-visited 87 days ago + renewing in 11d. Open Audible's detail drawer. |
 | 9 | **Guided cancel** | Detail drawer → "Open cancel page" deep-links straight to the cancel URL + shows step-by-step. |
 | 10 | **Trial countdown badge** | Pin the icon — the badge shows days to most-urgent renewal, color-coded green→amber→rust. |
-| 11 | **Duplicate detection** | Try tracking Netflix twice — Sentry offers "Update price" instead. |
+| 11 | **Duplicate detection** | Try tracking Netflix twice — Catchly offers "Update price" instead. |
 | 12 | **Annual savings recap** | Insights tab — big italic rust number is your annual run-rate. |
 
 ---
@@ -54,7 +54,7 @@ After loading sample data:
 So you don't go looking for things that aren't there:
 
 - **No Gmail scan.** A real version would request `gmail.readonly` and parse receipts. That requires OAuth, app verification by Google, and a privacy review — out of scope for a 1-day MVP. The architecture (a `gmail-scan` button + parser pipeline) is ready to drop in.
-- **No full cancel automation.** Sentry deep-links you straight to each service's cancel page and walks you through the dark-pattern steps in plain English, but it does not auto-click cancel buttons. Auto-clicking requires per-service scripts that break weekly when sites redesign. This is the right call for v1; Rocket Money also doesn't actually cancel anything — they hand you off to humans, charge 30-60% of "savings," and people get furious. Sentry is honest about being a guide.
+- **No full cancel automation.** Catchly deep-links you straight to each service's cancel page and walks you through the dark-pattern steps in plain English, but it does not auto-click cancel buttons. Auto-clicking requires per-service scripts that break weekly when sites redesign. This is the right call for v1; Rocket Money also doesn't actually cancel anything — they hand you off to humans, charge 30-60% of "savings," and people get furious. Catchly is honest about being a guide.
 - **No Plaid / bank linking.** That's the entire point. The product wedge is "we don't touch your bank."
 - **No backend.** No sync across devices, no team mode, no admin dashboard. All on-device. Adding backend (with E2E encryption) is a v2 decision once you have users.
 - **No payment / pro tier.** When you're ready, Stripe + a license-key flow is the cleanest path. Free vs. Pro split is already designed (see the feature-list message above).

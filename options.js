@@ -256,7 +256,7 @@ function wireDataButtons() {
     if (!confirm('Load sample subscriptions? This will overwrite your current tracked subs.')) return;
     await seedSampleData();
     await chrome.runtime.sendMessage({ type: 'reschedule_all' });
-    alert('Sample data loaded. Open the Sentry popup to see it.');
+    alert('Sample data loaded. Open the Catchly popup to see it.');
   });
 
   document.getElementById('btn-wipe').addEventListener('click', async () => {

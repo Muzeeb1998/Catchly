@@ -1,5 +1,5 @@
 /*
-  Subscription Sentry — content.css
+  Catchly — content.css
   In-page toast. Tokens scoped to .sentry-toast so host-page CSS can't
   bleed in and we don't bleed out. System font stack — content scripts
   shouldn't fetch Google Fonts (CSP, perf, host-page leakage).

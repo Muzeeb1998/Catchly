@@ -59,7 +59,7 @@
     root.id = '__sentry_toast';
     root.className = 'sentry-toast';
     root.setAttribute('role', 'dialog');
-    root.setAttribute('aria-label', 'Subscription Sentry — track this subscription?');
+    root.setAttribute('aria-label', 'Catchly — track this subscription?');
 
     const priceStr = amount ? `$${amount.toFixed(2)}/${cycle === 'yearly' ? 'yr' : cycle === 'weekly' ? 'wk' : 'mo'}` : '';
     const label = isTrial ? 'Free trial detected' : 'Subscription detected';
@@ -124,7 +124,7 @@
       <div class="sentry-toast-bar" style="background:#3D8B5C"></div>
       <div class="sentry-toast-body">
         <div class="sentry-toast-title">Tracked.</div>
-        <div class="sentry-toast-foot">Open the Sentry icon to view.</div>
+        <div class="sentry-toast-foot">Open the Catchly icon to view.</div>
       </div>`;
     document.documentElement.appendChild(c);
     setTimeout(() => {

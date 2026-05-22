@@ -71,7 +71,7 @@ async function refreshBadge() {
   await chrome.action.setBadgeBackgroundColor({ color: colors[u] });
   await chrome.action.setBadgeText({ text: best.d >= 0 ? String(best.d) : '!' });
   await chrome.action.setTitle({
-    title: `Subscription Sentry — next: ${best.sub.name} in ${best.d}d`
+    title: `Catchly — next: ${best.sub.name} in ${best.d}d`
   });
 }
 
