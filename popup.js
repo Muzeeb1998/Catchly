@@ -1038,14 +1038,14 @@ function closeAddModal() {
 function wireSettingsPane() {
   // Theme dropdown (Part C) — replaces the old Auto/Light/Dark segmented
   // control. Three options: system / editorial / utility. Apply instantly,
-  // persist to chrome.storage.local + sessionStorage cache, broadcast so
+  // persist to chrome.storage.local + localStorage cache (sync + persistent), broadcast so
   // content.js can re-theme any visible toast.
   const themeSelect = document.getElementById('set-theme');
   if (themeSelect) {
     themeSelect.addEventListener('change', async (e) => {
       const t = e.target.value;
       setThemeAttr(t);
-      try { sessionStorage.setItem('catchly_theme_cache', t); } catch {}
+      try { localStorage.setItem('catchly_theme_cache', t); } catch {}
       await setSettings({ theme: t });
       state.settings = await getSettings();
       // Broadcast to content scripts on every open tab so any visible
