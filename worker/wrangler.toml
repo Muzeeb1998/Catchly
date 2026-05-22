@@ -1,0 +1,16 @@
+name = "subscription-sentry-waitlist"
+main = "waitlist-worker.js"
+compatibility_date = "2025-01-01"
+
+# Created by `wrangler kv:namespace create WAITLIST`. The CLI prints:
+#   { binding = "WAITLIST", id = "<32-char-hex>" }
+# Replace the placeholder below with that id before running `wrangler deploy`.
+[[kv_namespaces]]
+binding = "WAITLIST"
+id = "2756f050df0f4a2b8f12847152f3242f"
+
+# Optional — pin to a custom route once you own a domain. While iterating
+# the default workers.dev URL is fine.
+# [routes]
+# pattern = "waitlist.example.com/*"
+# zone_name = "example.com"

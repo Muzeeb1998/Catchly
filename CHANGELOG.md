@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased — Part C: Cloudflare Worker endpoint
+
+The waitlist now has a deployable backend. A single Cloudflare Worker (`worker/waitlist-worker.js`) accepts POST `/signup` requests, validates the email server-side, and writes one entry per signup to a Workers KV namespace. No IP, no user-agent, no headers persisted — only the four fields the client sends (email, source, version, dismissedCount).
+
+### Files
+- `worker/waitlist-worker.js` — ~60-line Worker module. CORS preflight, JSON parse with try/catch, email regex re-check, 254-char and 32-char field caps, KV write under `signup:<timestamp>:<random8>` keys (sorts chronologically by default).
+- `worker/wrangler.toml` — config template. `[[kv_namespaces]]` binding placeholder; user pastes the namespace id printed by `wrangler kv:namespace create WAITLIST`.
+- `worker/README.md` — five-step deploy (install wrangler → login → create KV → paste id → deploy), commands to read collected emails one-off or bulk-dump to JSONL, optional hardening (tighten CORS to the packed extension id, custom domain, rate limit).
+
+### Wiring
+- `lib/waitlist.js` `WAITLIST_ENDPOINT` is still empty by default so the UI keeps working offline. After `wrangler deploy` prints the live URL, paste it into that constant and reload the extension.
+- Manifest left untouched. MV3 extension pages (popup, options) fetch any origin without `host_permissions`; README documents the hardening note for content-script use.
+
+### Cost
+Cloudflare's free tier covers 100k worker requests + 100k KV writes per day. A v1 waitlist will not approach either limit.
+
 ## Unreleased — Part B: Behavioral re-prompts
 
 Three demonstrated-value moments now surface the same early-access offer that was specced in Part A, with strict frequency rules so the product feels aware instead of pushy.
