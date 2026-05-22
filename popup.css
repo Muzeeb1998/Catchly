@@ -178,28 +178,42 @@ input, select, textarea { font-family: inherit; color: inherit; }
 /* ---------- summary ---------- */
 .summary {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  padding: 16px;
+  grid-template-columns: 1fr 1fr auto;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
+  gap: 0;
 }
-.summary-stat { display: flex; flex-direction: column; gap: 4px; }
+.summary-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0; /* allow grid cell to shrink instead of overflowing */
+}
 .summary-stat + .summary-stat {
   border-left: 1px solid var(--border);
-  padding-left: 16px;
+  padding-left: 14px;
+  margin-left: 14px;
 }
 .stat-eyebrow {
   font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
   text-transform: uppercase; color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .stat-value {
   font-family: var(--font-mono);
-  font-size: 22px; font-weight: 500;
+  font-size: 17px; font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
   letter-spacing: -0.015em;
-  line-height: 1;
+  line-height: 1.1;
   margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
+/* "active" column doesn't need the currency width; keep numeric punchy */
+.summary-stat:last-child .stat-value { font-size: 18px; }
 
 /* ---------- alerts strip ---------- */
 .alerts:not(:empty) {
