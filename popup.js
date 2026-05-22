@@ -224,6 +224,9 @@ function renderSubList() {
   for (const sub of rows) {
     const li = document.createElement('li');
     li.className = 'sub-item';
+    li.setAttribute('tabindex', '0');
+    li.setAttribute('role', 'button');
+    li.setAttribute('aria-label', `${sub.name}, ${fmtMoney(sub.amount || 0, sub.currency)} per ${sub.cycle || 'month'}`);
     const renewalTs = sub.isTrial && sub.trialEndsAt ? sub.trialEndsAt : sub.nextRenewal;
     const u = urgencyOf(renewalTs);
     const whenClass = u === 'safe' ? '' : `when-${u}`;
@@ -245,6 +248,12 @@ function renderSubList() {
       </div>
     `;
     li.addEventListener('click', () => openDrawer(sub.id));
+    li.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openDrawer(sub.id);
+      }
+    });
     ul.appendChild(li);
   }
 }
