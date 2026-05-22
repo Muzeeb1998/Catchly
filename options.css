@@ -245,7 +245,15 @@ input, select, textarea { font-family: inherit; color: inherit; }
   width: 32px; height: 18px;
   cursor: pointer;
 }
-.switch input { display: none; }
+.switch input {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .switch span {
   position: absolute; inset: 0;
   background: var(--border-strong);
@@ -263,6 +271,10 @@ input, select, textarea { font-family: inherit; color: inherit; }
 }
 .switch input:checked + span { background: var(--primary); }
 .switch input:checked + span::after { transform: translateX(14px); }
+.switch input:focus-visible + span {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
 
 /* ---------- inputs ---------- */
 input[type="text"],
