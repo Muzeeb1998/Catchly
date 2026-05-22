@@ -481,7 +481,7 @@ function openDrawer(subId) {
       ${sub.cancelUrl ? `<button class="btn btn-rust" id="d-cancel-open">Open cancel page</button>` : ''}
       <button class="btn btn-ghost" id="d-mark-cancelled">Mark as cancelled (already done)</button>
       <button class="btn btn-ghost" id="d-edit">Edit</button>
-      <button class="btn btn-ghost" id="d-delete" style="color:var(--clay)">Delete</button>
+      <button class="btn btn-ghost" id="d-delete" style="color:var(--danger)">Delete</button>
     </div>
   `;
 
