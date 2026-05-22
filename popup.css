@@ -1193,6 +1193,227 @@ input:focus, select:focus,
 }
 .settings-advanced:hover { background: var(--primary-soft); }
 
+/* ---------- waitlist surfaces (Part B) ----------
+   Three behavioral re-prompts wired to demonstrated-value moments.
+     - .wl-toast    slides up from above the bottom tab bar (third-sub)
+     - .wl-banner   sits inline at top of subs pane (day-7 fallback)
+     - .wl-inline   replaces the just-resolved capture row in place
+   All three share the .wl-* form + footer building blocks. */
+
+.wl-toast {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 76px; /* bottom-tabs is 64px + 12px gap */
+  z-index: 90;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-card);
+  background: var(--canvas);
+  box-shadow: 0 8px 24px rgba(10, 22, 40, 0.12), 0 2px 6px rgba(10, 22, 40, 0.06);
+  padding: 12px 14px 10px;
+  transform: translateY(16px);
+  opacity: 0;
+  transition: transform var(--t-panel), opacity var(--t-panel);
+}
+.wl-toast.is-open {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.wl-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 0 0 10px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-card);
+  background: var(--canvas);
+}
+.wl-banner-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  color: var(--primary);
+  flex: 0 0 auto;
+}
+.wl-banner-body {
+  flex: 1; min-width: 0;
+}
+.wl-banner-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.wl-banner-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.wl-banner-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  transition: background var(--t-fast);
+  white-space: nowrap;
+}
+.wl-banner-cta:hover { background: var(--primary-soft); }
+.wl-banner-close {
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.wl-banner-close:hover { background: var(--surface-2); color: var(--ink); }
+
+/* inline prompt replaces a capture row (Part B4) */
+.wl-inline {
+  display: block;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.wl-inline .wl-banner-icon { color: var(--primary); }
+
+/* shared header (toast + inline) */
+.wl-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.wl-head-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  color: var(--primary);
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+.wl-head-body { flex: 1; min-width: 0; }
+.wl-head-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  line-height: 1.35;
+}
+.wl-head-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.wl-head-close {
+  width: 22px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+  flex: 0 0 auto;
+  margin-top: -2px;
+}
+.wl-head-close:hover { background: var(--surface-2); color: var(--ink); }
+
+/* shared form row (toast + inline) */
+.wl-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.wl-input {
+  height: 30px;
+  padding: 0 10px;
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-input);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  outline: none;
+}
+.wl-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+.wl-submit {
+  height: 30px;
+  padding: 0 12px;
+  background: var(--primary);
+  color: #fff;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-input);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+.wl-submit:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.wl-submit:disabled { opacity: 0.6; cursor: progress; }
+
+.wl-error {
+  font-size: 11px;
+  color: var(--danger);
+  margin-top: 4px;
+}
+
+.wl-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+.wl-dismiss-hard {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 4px 0;
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+.wl-dismiss-hard:hover { color: var(--ink-2); text-decoration: underline; }
+.wl-privacy {
+  font-size: 10px;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0;
+}
+.wl-confirm {
+  font-size: 12px;
+  color: var(--success);
+  font-weight: 500;
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -29,6 +29,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
   wireSettings();
   wireDataButtons();
+
+  // Deep-link from the popup's day-7 banner (Part B5). When the banner's
+  // "Notify me" CTA opens options.html#waitlist, scroll the settings card
+  // into view and focus the email input.
+  if (location.hash === '#waitlist') {
+    const card = document.getElementById('settings-waitlist');
+    const input = document.getElementById('settings-waitlist-email');
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (input) setTimeout(() => input.focus(), 200);
+  }
 });
 
 // ----------------------------------------------------------------------------

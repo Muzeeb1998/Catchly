@@ -1,5 +1,10 @@
 // popup.js — the dashboard.
 // CHANGE LOG (most recent on top):
+//   Part B   — behavioral waitlist re-prompts: third-sub bottom toast,
+//              after-capture inline replacement, day-7 fallback banner.
+//              All three gated by lib/waitlist.js shouldShowWaitlistPrompt
+//              (24h no-prompt window, max 3 'shown' lifetime, 7-day gap,
+//              no back-to-back same surface, permanent opt-out wins).
 //   Change 3 — brand logos everywhere. 32px brand-square (SVG from logos/ when
 //              service is known, else solid brand-color tile with first-letter
 //              monogram) replaces the old 24px monogram block on sub rows,
@@ -28,6 +33,15 @@ import {
   uid, fmtMoney, fmtRelative, fmtDate, daysUntil,
   urgencyOf, toMonthly, toYearly, nextRenewalAfter, esc
 } from './lib/utils.js';
+import {
+  COPY as WL_COPY,
+  markFirstUseIfUnset,
+  shouldShowWaitlistPrompt,
+  submitEmail as wlSubmitEmail,
+  isValidEmail as wlIsValidEmail,
+  logExposure as wlLogExposure,
+  getWaitlistState
+} from './lib/waitlist.js';
 
 // ----------------------------------------------------------------------------
 // state
@@ -48,6 +62,9 @@ const state = {
 document.addEventListener('DOMContentLoaded', async () => {
   applyStoredTheme();
   wireBrandSquareFallback();
+  // Mark first popup-open time so the 24h no-prompt window can start ticking.
+  // Idempotent — no-op after the first call. (Part B)
+  await markFirstUseIfUnset();
   await refresh();
   wireHeader();
   wireTabs();
@@ -57,6 +74,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   wireKeyboard();
   wireSettingsPane();
   await renderPendingCaptures();
+  // Day-7 fallback banner — gated by shouldShowWaitlistPrompt. (Part B5)
+  await maybeShowFallbackBanner();
 });
 
 // Apply stored theme as early as possible to avoid flash.
@@ -765,6 +784,7 @@ async function renderPendingCaptures() {
       if (!(t instanceof HTMLElement)) return;
       const act = t.getAttribute('data-act');
       if (!act) return;
+      let skipRerender = false;
       if (act === 'dismiss') {
         await dismissCapture(p.id);
         await logEvent({ type: 'capture_dismissed', subName: p.name, ts: Date.now() });
@@ -795,6 +815,13 @@ async function renderPendingCaptures() {
         await dismissCapture(p.id);
         await logEvent({ type: 'capture_added', subName: sub.name, ts: Date.now() });
         await chrome.runtime.sendMessage({ type: 'reschedule_all' });
+
+        // After-capture inline prompt — replace this row IN PLACE with the
+        // waitlist inline prompt instead of removing it. (Part B4)
+        if (await shouldShowWaitlistPrompt('after_capture')) {
+          renderInlineWaitlistPrompt(wrap);
+          skipRerender = true;
+        }
       } else if (act === 'hike') {
         // Treat as a price change against the existing sub
         if (dup) {
@@ -806,7 +833,9 @@ async function renderPendingCaptures() {
         }
         await dismissCapture(p.id);
       }
-      await renderPendingCaptures();
+      if (!skipRerender) {
+        await renderPendingCaptures();
+      }
       await refresh();
     });
     host.appendChild(wrap);
@@ -982,7 +1011,11 @@ function openAddModal(editing = null) {
     await saveSub(sub);
     await chrome.runtime.sendMessage({ type: 'reschedule_all' });
     closeAddModal();
+    const wasNew = !editing;
     await refresh();
+    // Third-sub waitlist trigger — only on a NEW manual add (not edit), and
+    // only when active count just hit exactly 3. (Part B3)
+    if (wasNew) await maybeShowThirdSubToast();
   });
 
   document.getElementById('add-modal').classList.remove('hidden');
@@ -1065,4 +1098,218 @@ function syncSettingsPane() {
   set('set-detect', s.detectOnPages);
   const cur = document.getElementById('set-currency');
   if (cur) cur.value = s.currency || 'USD';
+}
+
+// ============================================================================
+// Waitlist behavioral re-prompts (Part B)
+// ============================================================================
+
+// Lucide "zap" icon SVG used in waitlist surface headers + banner
+const WL_ZAP_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`;
+const WL_X_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+const WL_CHECK_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+
+// ----- B3: third-sub toast -------------------------------------------------
+async function maybeShowThirdSubToast() {
+  const activeCount = state.subs.filter(s => s.status === 'active').length;
+  if (activeCount !== 3) return;
+  if (!(await shouldShowWaitlistPrompt('third_sub'))) return;
+
+  const host = document.getElementById('wl-toast');
+  if (!host) return;
+  const copy = WL_COPY.thirdSub;
+  host.innerHTML = `
+    <div class="wl-head">
+      <span class="wl-head-icon">${WL_ZAP_SVG}</span>
+      <div class="wl-head-body">
+        <div class="wl-head-title">${esc(copy.title)}</div>
+        <div class="wl-head-sub">${esc(copy.body)}</div>
+      </div>
+      <button class="wl-head-close" type="button" data-wl="soft" aria-label="Close">${WL_X_SVG}</button>
+    </div>
+    <form class="wl-form" data-wl-form novalidate>
+      <input type="email" class="wl-input" autocomplete="email" placeholder="${esc(copy.placeholder)}" />
+      <button type="submit" class="wl-submit">${esc(copy.cta)}</button>
+    </form>
+    <div class="wl-error hidden" role="alert"></div>
+    <div class="wl-foot">
+      <button type="button" class="wl-dismiss-hard" data-wl="hard">${esc(copy.dismissHard)}</button>
+      <p class="wl-privacy">${esc(copy.privacy)}</p>
+    </div>
+  `;
+  host.classList.remove('hidden');
+  // Slide-up via class flip on next frame
+  requestAnimationFrame(() => host.classList.add('is-open'));
+
+  // Auto-dismiss after 12s if untouched
+  const timer = setTimeout(() => wlCloseToast('dismissed_soft'), 12000);
+  host.dataset.wlTimer = String(timer);
+
+  wireWaitlistSurface(host, 'third_sub', 'toast', (outcome) => wlCloseToast(outcome));
+}
+
+function wlCloseToast(outcome) {
+  const host = document.getElementById('wl-toast');
+  if (!host) return;
+  const timer = parseInt(host.dataset.wlTimer || '0', 10);
+  if (timer) clearTimeout(timer);
+  delete host.dataset.wlTimer;
+  // animate out, then hide
+  host.classList.remove('is-open');
+  setTimeout(() => {
+    host.classList.add('hidden');
+    host.innerHTML = '';
+  }, 200);
+  if (outcome) wlLogExposure({ surface: 'toast', outcome });
+}
+
+// ----- B4: after-capture inline prompt --------------------------------------
+function renderInlineWaitlistPrompt(wrap) {
+  const copy = WL_COPY.afterCapture;
+  wrap.className = 'wl-inline';
+  wrap.innerHTML = `
+    <div class="wl-head">
+      <span class="wl-head-icon">${WL_ZAP_SVG}</span>
+      <div class="wl-head-body">
+        <div class="wl-head-title">${esc(copy.title)}</div>
+        <div class="wl-head-sub">${esc(copy.body)}</div>
+      </div>
+      <button class="wl-head-close" type="button" data-wl="soft" aria-label="Close">${WL_X_SVG}</button>
+    </div>
+    <form class="wl-form" data-wl-form novalidate>
+      <input type="email" class="wl-input" autocomplete="email" placeholder="${esc(copy.placeholder)}" />
+      <button type="submit" class="wl-submit">${esc(copy.cta)}</button>
+    </form>
+    <div class="wl-error hidden" role="alert"></div>
+    <div class="wl-foot">
+      <button type="button" class="wl-dismiss-hard" data-wl="hard">${esc(copy.dismissHard)}</button>
+      <p class="wl-privacy">${esc(copy.privacy)}</p>
+    </div>
+  `;
+
+  // Mark 'shown' immediately so the lifetime cap reflects this exposure.
+  wlLogExposure({ surface: 'inline', outcome: 'shown' });
+
+  wireWaitlistSurface(wrap, 'after_capture', 'inline', (outcome) => {
+    if (outcome) wlLogExposure({ surface: 'inline', outcome });
+    wrap.remove();
+    // Refresh captures list now that the inline prompt is gone.
+    renderPendingCaptures();
+  });
+}
+
+// ----- B5: day-7 fallback banner --------------------------------------------
+async function maybeShowFallbackBanner() {
+  const s = await getWaitlistState();
+  if (!s.firstUseTs) return; // markFirstUseIfUnset hasn't run yet (shouldn't happen)
+  if (Date.now() - s.firstUseTs < 7 * 24 * 3600_000) return;
+  if (s.exposures.length > 0) return; // brief: "no exposure has happened yet"
+  if (!(await shouldShowWaitlistPrompt('fallback'))) return;
+
+  const host = document.getElementById('wl-banner');
+  if (!host) return;
+  const copy = WL_COPY.fallback;
+  host.innerHTML = `
+    <span class="wl-banner-icon">${WL_ZAP_SVG}</span>
+    <div class="wl-banner-body">
+      <div class="wl-banner-title">${esc(copy.title)}</div>
+      <div class="wl-banner-sub">${esc(copy.body)}</div>
+    </div>
+    <button type="button" class="wl-banner-cta" data-wl="open-settings">${esc(copy.cta)}
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <button type="button" class="wl-banner-close" data-wl="soft" aria-label="Close">${WL_X_SVG}</button>
+  `;
+  host.classList.remove('hidden');
+  wlLogExposure({ surface: 'banner', outcome: 'shown' });
+
+  host.addEventListener('click', async (e) => {
+    const t = e.target instanceof HTMLElement ? e.target.closest('[data-wl]') : null;
+    if (!t) return;
+    const which = t.getAttribute('data-wl');
+    if (which === 'soft') {
+      await wlLogExposure({ surface: 'banner', outcome: 'dismissed_soft' });
+      host.classList.add('hidden');
+      host.innerHTML = '';
+    } else if (which === 'open-settings') {
+      // Hand off to options.html#waitlist — that page scrolls + focuses input
+      const url = chrome.runtime.getURL('options.html#waitlist');
+      chrome.tabs.create({ url });
+    }
+  });
+}
+
+// ----- shared wiring for toast + inline surfaces ----------------------------
+// host: element containing .wl-form / [data-wl] buttons
+// source: trigger source string ('third_sub' | 'after_capture')
+// surface: surface key ('toast' | 'inline')
+// closeFn: function (outcome) -> void that tears down the surface
+function wireWaitlistSurface(host, source, surface, closeFn) {
+  const form = host.querySelector('[data-wl-form]');
+  const input = host.querySelector('.wl-input');
+  const submit = host.querySelector('.wl-submit');
+  const errorEl = host.querySelector('.wl-error');
+
+  if (surface === 'toast') {
+    // Toast logs 'shown' here (inline logged at render time)
+    wlLogExposure({ surface: 'toast', outcome: 'shown' });
+  }
+
+  if (form && input && submit) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = input.value.trim();
+      if (errorEl) { errorEl.textContent = ''; errorEl.classList.add('hidden'); }
+      if (!wlIsValidEmail(email)) {
+        if (errorEl) {
+          errorEl.textContent = WL_COPY.errors.invalidEmail;
+          errorEl.classList.remove('hidden');
+        }
+        input.focus();
+        return;
+      }
+      const originalLabel = submit.textContent;
+      submit.disabled = true;
+      submit.setAttribute('aria-busy', 'true');
+      submit.textContent = '…';
+      try {
+        const res = await wlSubmitEmail({ email, source });
+        if (res.ok) {
+          // Show confirmation in same surface for 3s then close
+          host.innerHTML = `
+            <div class="wl-confirm">
+              <span class="wl-head-icon" style="color:var(--success);">${WL_CHECK_SVG}</span>
+              ${esc(WL_COPY.confirmed.title)} — ${esc(WL_COPY.confirmed.body)}
+            </div>
+          `;
+          // submitEmail() already wrote a 'submitted' exposure — don't log again.
+          setTimeout(() => closeFn(null), 3000);
+        } else {
+          if (errorEl) {
+            errorEl.textContent = WL_COPY.errors[res.error] || WL_COPY.errors.serverError;
+            errorEl.classList.remove('hidden');
+          }
+          submit.disabled = false;
+          submit.removeAttribute('aria-busy');
+          submit.textContent = originalLabel;
+        }
+      } catch {
+        if (errorEl) {
+          errorEl.textContent = WL_COPY.errors.serverError;
+          errorEl.classList.remove('hidden');
+        }
+        submit.disabled = false;
+        submit.removeAttribute('aria-busy');
+        submit.textContent = originalLabel;
+      }
+    });
+  }
+
+  host.addEventListener('click', (e) => {
+    const t = e.target instanceof HTMLElement ? e.target.closest('[data-wl]') : null;
+    if (!t) return;
+    const which = t.getAttribute('data-wl');
+    if (which === 'soft') closeFn('dismissed_soft');
+    else if (which === 'hard') closeFn('dismissed_hard');
+  });
 }
