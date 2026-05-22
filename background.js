@@ -7,7 +7,7 @@
 
 import {
   getAllSubs, getSettings, getDaysSinceLastVisit,
-  addPendingCapture, recordUsage, logEvent
+  addPendingCapture, recordUsage, logEvent, getEvents
 } from './lib/storage.js';
 import { daysUntil, urgencyOf, fmtMoney } from './lib/utils.js';
 import { identifyFromPage } from './lib/merchants.js';
@@ -76,9 +76,21 @@ async function refreshBadge() {
 }
 
 // ---------- daily checks ----------
+// Dedup window for shadow-charge notifications. Without this the daily alarm
+// re-fires the same shadow alert every 24h while the conditions hold
+// (dRenew <= 3 AND lastVisit >= threshold). For a sub with a 3-day window
+// that's three notifications in a row -> notification fatigue -> user
+// disables notifications entirely.
+const SHADOW_DEDUP_MS = 7 * 24 * 3600_000;
+
 async function runDailyChecks() {
   const settings = await getSettings();
   const subs = await getAllSubs();
+  // Fetch the event log once outside the loop so we don't N+1 storage reads
+  // when checking dedup for each sub. getEvents returns at most `limit`
+  // entries; 100 is plenty for a 7-day window.
+  const recentEvents = await getEvents(100);
+  const now = Date.now();
   for (const sub of subs) {
     if (sub.status !== 'active') continue;
     // Reschedule alarms for upcoming renewals/trials
@@ -91,15 +103,23 @@ async function runDailyChecks() {
         dRenew !== null && dRenew >= 0 && dRenew <= 3 &&
         lastVisit !== null && lastVisit >= settings.shadowDaysThreshold
       ) {
+        // Skip if we already fired a shadow alert for this sub within the
+        // dedup window. The event log is the source of truth for this.
+        const recentShadow = recentEvents.find(e =>
+          e.type === 'shadow_alert' &&
+          e.subId === sub.id &&
+          (now - e.ts) < SHADOW_DEDUP_MS
+        );
+        if (recentShadow) continue;
         await pushNotification({
-          id: `shadow_${sub.id}_${Date.now()}`,
+          id: `shadow_${sub.id}_${now}`,
           title: `Shadow charge ahead: ${sub.name}`,
           message:
             `Renews in ${dRenew}d for ${fmtMoney(sub.amount, sub.currency)}. ` +
             `You haven't visited in ${lastVisit} days.`,
           priority: 2
         });
-        await logEvent({ type: 'shadow_alert', subId: sub.id, daysSince: lastVisit, ts: Date.now() });
+        await logEvent({ type: 'shadow_alert', subId: sub.id, daysSince: lastVisit, ts: now });
       }
     }
   }
