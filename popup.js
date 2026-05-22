@@ -1,9 +1,14 @@
 // popup.js — the dashboard.
-// Loads data, renders three tabs (Subs / Calendar / Insights), handles drawer + modal,
-// reconciles pending captures, computes alerts (price hikes, shadow charges, trials).
+// CHANGE LOG (most recent on top):
+//   Change 1 — bottom tab bar with 4 destinations (Subs/Alerts/Insights/Settings),
+//              header gear removed (Settings now a tab), Calendar tab dropped,
+//              Alerts moved to its own pane, inline Settings pane with theme/
+//              currency/notification controls + Advanced settings link.
+// Loads data, renders panes, handles drawer + modal, reconciles pending captures,
+// computes alerts (price hikes, shadow charges, trials).
 
 import {
-  getAllSubs, saveSub, deleteSub, getSettings,
+  getAllSubs, saveSub, deleteSub, getSettings, setSettings,
   getPendingCaptures, dismissCapture, findPotentialDuplicate,
   getEvents, seedSampleData, getDaysSinceLastVisit, logEvent,
   checkAndRecordPriceChange
@@ -30,16 +35,32 @@ const state = {
 // boot
 // ----------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', async () => {
+  applyStoredTheme();
   await refresh();
   wireHeader();
   wireTabs();
   wireListTools();
-  wireCalendarNav();
   wireDrawer();
   wireModal();
   wireKeyboard();
+  wireSettingsPane();
   await renderPendingCaptures();
 });
+
+// Apply stored theme as early as possible to avoid flash.
+function applyStoredTheme() {
+  try {
+    chrome.storage.local.get('settings_v1', (res) => {
+      const t = (res?.settings_v1?.theme) || 'auto';
+      setThemeAttr(t);
+    });
+  } catch {}
+}
+function setThemeAttr(theme) {
+  const root = document.documentElement;
+  if (theme === 'light' || theme === 'dark') root.setAttribute('data-theme', theme);
+  else root.removeAttribute('data-theme');
+}
 
 function wireKeyboard() {
   document.addEventListener('keydown', (e) => {
@@ -68,9 +89,9 @@ async function refresh() {
 async function renderAll() {
   renderSummary();
   renderSubList();
-  renderCalendar();
   renderInsights();
   await renderAlerts();
+  syncSettingsPane();
 }
 
 // ----------------------------------------------------------------------------
@@ -78,7 +99,8 @@ async function renderAll() {
 // ----------------------------------------------------------------------------
 function wireHeader() {
   document.getElementById('btn-add').addEventListener('click', () => openAddModal());
-  document.getElementById('btn-options').addEventListener('click', () => {
+  // Gear icon removed — Settings is now a bottom tab. See wireSettingsPane().
+  document.getElementById('btn-advanced')?.addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
   });
   document.getElementById('btn-add-empty')?.addEventListener('click', () => openAddModal());
@@ -194,7 +216,8 @@ async function renderAlerts() {
     return true;
   });
 
-  for (const a of unique.slice(0, 4)) {
+  const slice = unique.slice(0, 8);
+  for (const a of slice) {
     const el = document.createElement('div');
     el.className = `alert ${a.color ? 'alert-' + a.color : ''}`;
     const iconSvg = ALERT_ICONS[a.icon] || '';
@@ -208,6 +231,19 @@ async function renderAlerts() {
     `;
     el.querySelector('.alert-act').addEventListener('click', a.onAction);
     host.appendChild(el);
+  }
+
+  // empty state + tab badge (Change 1)
+  const empty = document.getElementById('alerts-empty');
+  if (empty) empty.classList.toggle('hidden', slice.length > 0);
+  const badge = document.getElementById('tab-alerts-badge');
+  if (badge) {
+    if (slice.length) {
+      badge.textContent = String(slice.length);
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
   }
 }
 
@@ -818,4 +854,75 @@ function closeAddModal() {
   // Clear stale picked-service state so next open starts clean
   const body = document.getElementById('add-body');
   if (body) delete body.dataset.pickedKey;
+}
+
+// ----------------------------------------------------------------------------
+// settings pane (Change 1)
+// ----------------------------------------------------------------------------
+function wireSettingsPane() {
+  // Theme segmented control
+  document.querySelectorAll('[data-theme-set]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const t = btn.dataset.themeSet;
+      setThemeAttr(t);
+      await setSettings({ theme: t });
+      state.settings = await getSettings();
+      syncSettingsPane();
+    });
+  });
+
+  // Reminder day chips
+  document.querySelectorAll('#settings-pane [data-rem]').forEach(input => {
+    input.addEventListener('change', async () => {
+      const days = [];
+      document.querySelectorAll('#settings-pane [data-rem]').forEach(cb => {
+        if (cb.checked) days.push(parseInt(cb.dataset.rem, 10));
+      });
+      await setSettings({ reminderDays: days });
+      state.settings = await getSettings();
+      await chrome.runtime.sendMessage({ type: 'reschedule_all' });
+    });
+  });
+
+  // Notification + display toggles
+  const bind = (id, key) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', async (e) => {
+      const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+      await setSettings({ [key]: v });
+      state.settings = await getSettings();
+      await renderAlerts();
+    });
+  };
+  bind('set-trials', 'notifyTrials');
+  bind('set-hikes', 'notifyHikes');
+  bind('set-shadow', 'notifyShadow');
+  bind('set-currency', 'currency');
+  bind('set-detect', 'detectOnPages');
+}
+
+function syncSettingsPane() {
+  const s = state.settings;
+  if (!s) return;
+
+  // Theme segmented active state
+  const theme = s.theme || 'auto';
+  document.querySelectorAll('[data-theme-set]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.themeSet === theme);
+  });
+
+  // Reminder day chips
+  document.querySelectorAll('#settings-pane [data-rem]').forEach(cb => {
+    cb.checked = (s.reminderDays || []).includes(parseInt(cb.dataset.rem, 10));
+  });
+
+  // Toggles + currency
+  const set = (id, v) => { const el = document.getElementById(id); if (el && 'checked' in el) el.checked = !!v; };
+  set('set-trials', s.notifyTrials);
+  set('set-hikes', s.notifyHikes);
+  set('set-shadow', s.notifyShadow);
+  set('set-detect', s.detectOnPages);
+  const cur = document.getElementById('set-currency');
+  if (cur) cur.value = s.currency || 'USD';
 }

@@ -19,12 +19,7 @@
       </div>
       <div class="hd-r">
         <button class="icon-btn" id="btn-add" title="Add subscription" aria-label="Add subscription">
-          <!-- lucide: plus -->
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-        </button>
-        <button class="icon-btn" id="btn-options" title="Settings" aria-label="Settings">
-          <!-- lucide: settings -->
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
       </div>
     </header>
@@ -48,16 +43,6 @@
       </div>
     </section>
 
-    <!-- alert strip (price hike / shadow / trial ending) -->
-    <div id="alerts" class="alerts"></div>
-
-    <!-- tabs -->
-    <nav class="tabs">
-      <button class="tab active" data-tab="subs">Subscriptions</button>
-      <button class="tab" data-tab="calendar">Calendar</button>
-      <button class="tab" data-tab="insights">Insights</button>
-    </nav>
-
     <!-- tab panes -->
     <main class="pane-host">
 
@@ -74,7 +59,6 @@
         <ul id="sub-list" class="sub-list"></ul>
         <div id="empty-state" class="empty hidden">
           <div class="empty-art">
-            <!-- lucide: inbox -->
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
           </div>
           <div class="empty-title">Nothing tracked yet.</div>
@@ -86,23 +70,15 @@
         </div>
       </section>
 
-      <!-- CALENDAR PANE -->
-      <section class="pane" data-pane="calendar">
-        <div class="cal-head">
-          <button class="icon-btn cal-nav" id="cal-prev" aria-label="Previous month">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <div class="cal-title" id="cal-title">—</div>
-          <button class="icon-btn cal-nav" id="cal-next" aria-label="Next month">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-        </div>
-        <div class="cal-dow"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
-        <div class="cal-grid" id="cal-grid" role="grid" aria-label="Subscription renewal calendar"></div>
-        <div class="cal-legend">
-          <span class="leg"><span class="dot dot-safe"></span> renewal</span>
-          <span class="leg"><span class="dot dot-soon"></span> ≤ 7d</span>
-          <span class="leg"><span class="dot dot-urgent"></span> ≤ 2d</span>
+      <!-- ALERTS PANE -->
+      <section class="pane" data-pane="alerts">
+        <div id="alerts" class="alerts alerts-pane"></div>
+        <div id="alerts-empty" class="empty hidden">
+          <div class="empty-art">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          </div>
+          <div class="empty-title">No alerts.</div>
+          <div class="empty-sub">Price hikes, trial endings, and shadow-charge warnings will appear here.</div>
         </div>
       </section>
 
@@ -129,12 +105,86 @@
         </div>
       </section>
 
+      <!-- SETTINGS PANE -->
+      <section class="pane" data-pane="settings">
+        <div class="settings-pane" id="settings-pane">
+          <div class="settings-group">
+            <div class="card-eyebrow">appearance</div>
+            <div class="settings-row">
+              <label class="settings-label">Theme</label>
+              <div class="seg" role="tablist" aria-label="Theme">
+                <button class="seg-btn" data-theme-set="auto">Auto</button>
+                <button class="seg-btn" data-theme-set="light">Light</button>
+                <button class="seg-btn" data-theme-set="dark">Dark</button>
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="card-eyebrow">notifications</div>
+            <div class="settings-row">
+              <label class="settings-label">Remind before renewal</label>
+              <div class="chip-row">
+                <label class="chip"><input type="checkbox" data-rem="7">7d</label>
+                <label class="chip"><input type="checkbox" data-rem="3">3d</label>
+                <label class="chip"><input type="checkbox" data-rem="1">1d</label>
+              </div>
+            </div>
+            <div class="settings-row">
+              <label class="settings-label" for="set-trials">Warn 24h before trial ends</label>
+              <label class="switch"><input type="checkbox" id="set-trials"><span></span></label>
+            </div>
+            <div class="settings-row">
+              <label class="settings-label" for="set-hikes">Alert me about price hikes</label>
+              <label class="switch"><input type="checkbox" id="set-hikes"><span></span></label>
+            </div>
+            <div class="settings-row">
+              <label class="settings-label" for="set-shadow">Flag shadow charges</label>
+              <label class="switch"><input type="checkbox" id="set-shadow"><span></span></label>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="card-eyebrow">display</div>
+            <div class="settings-row">
+              <label class="settings-label" for="set-currency">Currency</label>
+              <select id="set-currency" class="sel sel-compact">
+                <option>USD</option><option>EUR</option><option>GBP</option>
+                <option>CAD</option><option>AUD</option><option>JPY</option><option>INR</option>
+              </select>
+            </div>
+            <div class="settings-row">
+              <label class="settings-label" for="set-detect">Detect subscription pages</label>
+              <label class="switch"><input type="checkbox" id="set-detect"><span></span></label>
+            </div>
+          </div>
+          <button class="settings-advanced" id="btn-advanced">
+            Advanced settings
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </button>
+        </div>
+      </section>
+
     </main>
 
-    <footer class="ft">
-      <span class="ft-l">Local-only · No account</span>
-      <span class="ft-r">v0.1</span>
-    </footer>
+    <!-- bottom tab bar -->
+    <nav class="tabs bottom-tabs" role="tablist" aria-label="Sections">
+      <button class="tab active" data-tab="subs" aria-label="Subscriptions">
+        <span class="tab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-7"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></span>
+        <span class="tab-label">Subs</span>
+      </button>
+      <button class="tab" data-tab="alerts" aria-label="Alerts">
+        <span class="tab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+        <span class="tab-label">Alerts</span>
+        <span class="tab-badge hidden" id="tab-alerts-badge">0</span>
+      </button>
+      <button class="tab" data-tab="insights" aria-label="Insights">
+        <span class="tab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg></span>
+        <span class="tab-label">Insights</span>
+      </button>
+      <button class="tab" data-tab="settings" aria-label="Settings">
+        <span class="tab-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
+        <span class="tab-label">Settings</span>
+      </button>
+    </nav>
   </div>
 
   <!-- detail drawer -->
