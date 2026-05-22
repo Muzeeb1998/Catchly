@@ -18,7 +18,7 @@
 :root {
   --canvas:        #FFFFFF;
   --surface:       #F7F8FA;
-  --surface-2:     #EEF1F6;
+  --surface-2:     #F0F1F3;
   --border:        #E3E8EF;
   --border-strong: #C7D0DC;
   --ink:           #0A1628;
@@ -92,7 +92,7 @@
 :root[data-theme="utility"] {
   --canvas:        #F7F8FA;
   --surface:       #FFFFFF;
-  --surface-2:     #EEF1F6;
+  --surface-2:     #F0F1F3;
   --border:        #E3E8EF;
   --border-strong: #C7D0DC;
   --ink:           #0A1628;
@@ -102,7 +102,11 @@
   --primary-hover: #C9A816;
   --primary-soft:  #FDF8D4;
   --success:       #00875A;
-  --warning:       #F5D547;
+  /* Brief spec said --amber=#F5D547, but --warning is used as TEXT color on
+     pill-trial, when-soon, alert-clay icon, status-pill dot, detail-warn
+     border. Yellow text on white = 1.4:1 contrast = WCAG fail. Use deep amber
+     for readable warnings; yellow stays the --primary brand accent. */
+  --warning:       #B54708;
   --danger:        #B42318;
 }
 @media (prefers-color-scheme: dark) {
@@ -119,7 +123,11 @@
     --primary-hover: #FFDC1E;
     --primary-soft:  #2A2410;
     --success:       #6BCB77;
-    --warning:       #F5D547;
+    /* See note in light block — yellow as --warning kills text contrast.
+       In dark mode yellow on navy IS readable, so this is purely for
+       symmetry with the light block's reasoning. Use brighter amber to
+       match dark-mode visual weight. */
+    --warning:       #D49050;
     --danger:        #FF6B6B;
   }
 }
@@ -374,8 +382,19 @@ input, select, textarea { font-family: inherit; color: inherit; }
   line-height: 1;
 }
 .bottom-tabs .tab:hover { color: var(--ink-2); background: var(--surface-2); }
-.bottom-tabs .tab.active { color: var(--primary); font-weight: 600; }
-.bottom-tabs .tab.active .tab-icon { color: var(--primary); }
+/* Active state: ink text/icon + a 2px primary indicator bar at the top edge.
+   Demoted from full primary color on label+icon (was visually loud blue/
+   yellow across every popup). The 12px gutter on the bar matches tab padding. */
+.bottom-tabs .tab.active { color: var(--ink); font-weight: 600; }
+.bottom-tabs .tab.active .tab-icon { color: var(--ink); }
+.bottom-tabs .tab.active::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 14px; right: 14px;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 0 0 2px 2px;
+}
 .bottom-tabs .tab:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: -2px;
@@ -1196,6 +1215,37 @@ input:focus, select:focus,
 :root[data-theme="utility"] .tab.active { color: var(--ink); }
 :root[data-theme="utility"] .bottom-tabs .tab.active { color: var(--ink); }
 :root[data-theme="utility"] .bottom-tabs .tab.active .tab-icon { color: var(--ink); }
+/* Settings-pane chips (`7d 3d 1d`) and Advanced settings link both use
+   color: var(--primary) which is yellow in Utility — yellow-on-yellow-tint
+   is invisible. Force ink text + stronger border + slightly opaque tint. */
+:root[data-theme="utility"] .chip:has(input:checked) {
+  color: var(--ink);
+  border-color: var(--primary-hover);
+  background: var(--primary);
+}
+:root[data-theme="utility"] .settings-advanced { color: var(--ink); }
+:root[data-theme="utility"] .settings-advanced:hover {
+  background: var(--primary);
+  color: var(--ink);
+}
+:root[data-theme="utility"] .wl-banner-cta { color: var(--ink); }
+:root[data-theme="utility"] .wl-banner-cta:hover {
+  background: var(--primary);
+  color: var(--ink);
+}
+:root[data-theme="utility"] .wl-banner-icon,
+:root[data-theme="utility"] .wl-head-icon,
+:root[data-theme="utility"] .wl-inline .wl-banner-icon {
+  /* Lucide zap stroke: yellow on light canvas reads OK but better with deeper hue */
+  color: var(--primary-hover);
+}
+/* Brand-square brand colors (Disney blue / Max blue / Dropbox blue / etc.) pop
+   loudly against the yellow Utility theme. Dampen the saturation so identity
+   reads as brand-tint rather than billboard. Apply only to the brand-color
+   background — the CDN logo (white SVG) layered inside stays readable. */
+:root[data-theme="utility"] .brand-square {
+  filter: saturate(0.7) brightness(0.92);
+}
 
 /* switch (compact, inline) */
 .switch {

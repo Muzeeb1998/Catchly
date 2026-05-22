@@ -8,7 +8,7 @@
 :root {
   --canvas:        #FFFFFF;
   --surface:       #F7F8FA;
-  --surface-2:     #EEF1F6;
+  --surface-2:     #F0F1F3;
   --border:        #E3E8EF;
   --border-strong: #C7D0DC;
   --ink:           #0A1628;
@@ -74,7 +74,7 @@
 :root[data-theme="utility"] {
   --canvas:        #F7F8FA;
   --surface:       #FFFFFF;
-  --surface-2:     #EEF1F6;
+  --surface-2:     #F0F1F3;
   --border:        #E3E8EF;
   --border-strong: #C7D0DC;
   --ink:           #0A1628;
@@ -84,7 +84,9 @@
   --primary-hover: #C9A816;
   --primary-soft:  #FDF8D4;
   --success:       #00875A;
-  --warning:       #F5D547;
+  /* Yellow #F5D547 as warning text fails WCAG on white. Deep amber instead;
+     yellow stays the --primary brand accent. Mirrors popup.css. */
+  --warning:       #B54708;
   --danger:        #B42318;
 }
 @media (prefers-color-scheme: dark) {
@@ -101,7 +103,7 @@
     --primary-hover: #FFDC1E;
     --primary-soft:  #2A2410;
     --success:       #6BCB77;
-    --warning:       #F5D547;
+    --warning:       #D49050;
     --danger:        #FF6B6B;
   }
 }
@@ -275,6 +277,12 @@ input, select, textarea { font-family: inherit; color: inherit; }
   background: var(--primary-soft);
   border-color: var(--primary);
   color: var(--primary);
+}
+/* Utility yellow-on-yellow contrast fix (see popup.css equivalent). */
+:root[data-theme="utility"] .chip:has(input:checked) {
+  color: var(--ink);
+  background: var(--primary);
+  border-color: var(--primary-hover);
 }
 
 /* ---------- switch ---------- */
