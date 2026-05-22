@@ -1,4 +1,4 @@
-name = "subscription-sentry-waitlist"
+name = "catchly-waitlist"
 main = "waitlist-worker.js"
 compatibility_date = "2025-01-01"
 
