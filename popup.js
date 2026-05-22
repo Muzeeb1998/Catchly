@@ -1,5 +1,9 @@
 // popup.js — the dashboard.
 // CHANGE LOG (most recent on top):
+//   Change 2 — sub-list now groups Active + Inactive into collapsible sections
+//              (chevron headers with counts, collapse state persisted via
+//              getUiState/setUiState in chrome.storage.local). Inactive rows
+//              dimmed to 60% with "Cancelled <date>" instead of countdown.
 //   Change 1 — bottom tab bar with 4 destinations (Subs/Alerts/Insights/Settings),
 //              header gear removed (Settings now a tab), Calendar tab dropped,
 //              Alerts moved to its own pane, inline Settings pane with theme/
@@ -11,7 +15,8 @@ import {
   getAllSubs, saveSub, deleteSub, getSettings, setSettings,
   getPendingCaptures, dismissCapture, findPotentialDuplicate,
   getEvents, seedSampleData, getDaysSinceLastVisit, logEvent,
-  checkAndRecordPriceChange
+  checkAndRecordPriceChange,
+  getUiState, setUiState
 } from './lib/storage.js';
 import { SERVICES, listServices } from './lib/merchants.js';
 import {
@@ -28,7 +33,8 @@ const state = {
   filter: '',
   sort: 'renewal',
   calCursor: new Date(),
-  events: []
+  events: [],
+  ui: { activeCollapsed: false, inactiveCollapsed: true } // Change 2
 };
 
 // ----------------------------------------------------------------------------
@@ -83,6 +89,7 @@ async function refresh() {
   state.subs = await getAllSubs();
   state.settings = await getSettings();
   state.events = await getEvents(20);
+  state.ui = await getUiState();
   await renderAll();
 }
 
@@ -266,44 +273,123 @@ function renderSubList() {
   const empty = document.getElementById('empty-state');
   ul.innerHTML = '';
 
-  let rows = state.subs.filter(s => s.status === 'active');
-  if (state.filter) {
-    rows = rows.filter(s =>
-      (s.name || '').toLowerCase().includes(state.filter) ||
-      (s.category || '').toLowerCase().includes(state.filter)
-    );
-  }
-
-  rows.sort((a, b) => {
+  const filterFn = (s) => {
+    if (!state.filter) return true;
+    return (s.name || '').toLowerCase().includes(state.filter) ||
+           (s.category || '').toLowerCase().includes(state.filter);
+  };
+  const sortActive = (a, b) => {
     if (state.sort === 'amount') return (b.amount || 0) - (a.amount || 0);
-    if (state.sort === 'name') return (a.name || '').localeCompare(b.name || '');
+    if (state.sort === 'name')   return (a.name || '').localeCompare(b.name || '');
     return (a.nextRenewal || 0) - (b.nextRenewal || 0);
-  });
+  };
+  const sortInactive = (a, b) => (b.cancelledAt || 0) - (a.cancelledAt || 0);
 
-  if (rows.length === 0) {
+  const active   = state.subs.filter(s => s.status === 'active').filter(filterFn).sort(sortActive);
+  const inactive = state.subs.filter(s => s.status !== 'active').filter(filterFn).sort(sortInactive);
+
+  // Total empty state — no subs in either bucket
+  if (active.length === 0 && inactive.length === 0) {
     empty.classList.remove('hidden');
     return;
   }
   empty.classList.add('hidden');
 
+  if (active.length > 0) {
+    ul.appendChild(buildGroup({
+      key: 'active',
+      label: active.length === 1 ? 'Active Subscription' : 'Active Subscriptions',
+      count: active.length,
+      collapsed: !!state.ui.activeCollapsed,
+      rows: active,
+      inactive: false
+    }));
+  }
+  if (inactive.length > 0) {
+    ul.appendChild(buildGroup({
+      key: 'inactive',
+      label: 'Inactive',
+      count: inactive.length,
+      collapsed: !!state.ui.inactiveCollapsed,
+      rows: inactive,
+      inactive: true
+    }));
+  }
+}
+
+function buildGroup({ key, label, count, collapsed, rows, inactive }) {
+  // <li> wrapper so #sub-list (a <ul>) stays semantically valid
+  const wrap = document.createElement('li');
+  wrap.className = `sub-group ${collapsed ? 'is-collapsed' : ''}`;
+  wrap.dataset.group = key;
+
+  const header = document.createElement('button');
+  header.type = 'button';
+  header.className = 'group-header';
+  header.setAttribute('aria-expanded', String(!collapsed));
+  header.setAttribute('aria-controls', `sub-group-${key}-rows`);
+  header.innerHTML = `
+    <span class="group-chevron" aria-hidden="true">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </span>
+    <span class="group-label">${esc(label)}</span>
+    <span class="group-count">${count}</span>
+  `;
+  header.addEventListener('click', async () => {
+    const isCollapsed = wrap.classList.toggle('is-collapsed');
+    header.setAttribute('aria-expanded', String(!isCollapsed));
+    const patch = key === 'active'
+      ? { activeCollapsed: isCollapsed }
+      : { inactiveCollapsed: isCollapsed };
+    state.ui = { ...state.ui, ...patch };
+    await setUiState(patch);
+  });
+
+  const rowsWrap = document.createElement('ul');
+  rowsWrap.className = 'group-rows';
+  rowsWrap.id = `sub-group-${key}-rows`;
+
   for (const sub of rows) {
-    const li = document.createElement('li');
-    li.className = 'sub-item';
-    li.setAttribute('tabindex', '0');
-    li.setAttribute('role', 'button');
-    li.setAttribute('aria-label', `${sub.name}, ${fmtMoney(sub.amount || 0, sub.currency)} per ${sub.cycle || 'month'}`);
+    rowsWrap.appendChild(buildSubItem(sub, inactive));
+  }
+
+  wrap.appendChild(header);
+  wrap.appendChild(rowsWrap);
+  return wrap;
+}
+
+function buildSubItem(sub, inactive) {
+  const li = document.createElement('li');
+  li.className = inactive ? 'sub-item sub-item-inactive' : 'sub-item';
+  li.setAttribute('tabindex', '0');
+  li.setAttribute('role', 'button');
+  li.setAttribute('aria-label', `${sub.name}, ${fmtMoney(sub.amount || 0, sub.currency)} per ${sub.cycle || 'month'}`);
+
+  const brand = (sub.color || '#15110C').replace(/^#/, '');
+  const tintBg = `#${brand}1F`;
+  const ringBorder = `#${brand}40`;
+  const fgColor = `#${brand}`;
+  const initial = (sub.name || '?').trim().charAt(0).toUpperCase();
+
+  if (inactive) {
+    const cancelledLabel = sub.cancelledAt
+      ? `Cancelled ${fmtDate(sub.cancelledAt)}`
+      : 'Cancelled';
+    li.innerHTML = `
+      <div class="sub-dot" style="background:${tintBg};color:${fgColor};box-shadow:inset 0 0 0 1px ${ringBorder};">${esc(initial)}</div>
+      <div class="sub-main">
+        <div class="sub-name">${esc(sub.name)}</div>
+        <div class="sub-meta">${esc(cancelledLabel)}</div>
+      </div>
+      <div class="sub-right">
+        <div class="sub-amount">${fmtMoney(sub.amount || 0, sub.currency)}</div>
+      </div>
+    `;
+  } else {
     const renewalTs = sub.isTrial && sub.trialEndsAt ? sub.trialEndsAt : sub.nextRenewal;
     const u = urgencyOf(renewalTs);
     const whenClass = u === 'safe' ? '' : `when-${u}`;
     const hike = sub.previousAmount && sub.amount > sub.previousAmount;
-
-    const brand = (sub.color || '#15110C').replace(/^#/, '');
-    // 8-digit hex with low alpha for tint background; full color for foreground letter
-    const tintBg = `#${brand}1F`;
-    const ringBorder = `#${brand}40`;
-    const fgColor = `#${brand}`;
-    const initial = (sub.name || '?').trim().charAt(0).toUpperCase();
-
     li.innerHTML = `
       <div class="sub-dot" style="background:${tintBg};color:${fgColor};box-shadow:inset 0 0 0 1px ${ringBorder};">${esc(initial)}</div>
       <div class="sub-main">
@@ -319,15 +405,16 @@ function renderSubList() {
         <div class="sub-when ${whenClass}">${esc(fmtRelative(renewalTs))}</div>
       </div>
     `;
-    li.addEventListener('click', () => openDrawer(sub.id));
-    li.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        openDrawer(sub.id);
-      }
-    });
-    ul.appendChild(li);
   }
+
+  li.addEventListener('click', () => openDrawer(sub.id));
+  li.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openDrawer(sub.id);
+    }
+  });
+  return li;
 }
 
 // ----------------------------------------------------------------------------
