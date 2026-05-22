@@ -1,0 +1,190 @@
+/*
+  Subscription Sentry — content.css
+  In-page toast. Tokens scoped to .sentry-toast so host-page CSS can't
+  bleed in and we don't bleed out. System font stack — content scripts
+  shouldn't fetch Google Fonts (CSP, perf, host-page leakage).
+*/
+
+.sentry-toast {
+  --s-canvas:        #FFFFFF;
+  --s-surface:       #F7F8FA;
+  --s-border:        #E3E8EF;
+  --s-border-strong: #C7D0DC;
+  --s-ink:           #0A1628;
+  --s-ink-2:         #2E3A4F;
+  --s-muted:         #6B7689;
+  --s-primary:       #1B5BFF;
+  --s-primary-hover: #0F47D9;
+  --s-success:       #00875A;
+
+  position: fixed !important;
+  right: 16px !important;
+  bottom: 16px !important;
+  z-index: 2147483600 !important;
+  width: 340px !important;
+  max-width: calc(100vw - 32px) !important;
+  display: grid !important;
+  grid-template-columns: 4px 1fr auto !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  padding: 14px 14px 14px 0 !important;
+  background: var(--s-canvas) !important;
+  color: var(--s-ink) !important;
+  border: 1px solid var(--s-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(10, 22, 40, 0.08), 0 1px 3px rgba(10, 22, 40, 0.05) !important;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  -webkit-font-smoothing: antialiased !important;
+  opacity: 0 !important;
+  transform: translateY(8px) !important;
+  transition: opacity 180ms ease-out, transform 180ms ease-out !important;
+  pointer-events: auto !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sentry-toast {
+    --s-canvas:        #0B1220;
+    --s-surface:       #111A2E;
+    --s-border:        #1F2C46;
+    --s-border-strong: #2C3C5C;
+    --s-ink:           #E6ECF5;
+    --s-ink-2:         #B6C0D2;
+    --s-muted:         #7C8AA3;
+    --s-primary:       #5A86FF;
+    --s-primary-hover: #4775FF;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+  }
+}
+
+.sentry-toast.sentry-toast-in {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.sentry-toast-bar {
+  width: 4px !important;
+  border-radius: 2px 0 0 2px !important;
+  background: var(--s-ink-2) !important;
+  align-self: stretch !important;
+}
+
+.sentry-toast-body {
+  min-width: 0 !important;
+  padding-right: 8px !important;
+}
+
+.sentry-toast-eyebrow {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: var(--s-muted) !important;
+  margin-bottom: 2px !important;
+}
+
+.sentry-toast-title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--s-ink) !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.sentry-toast-price {
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace !important;
+  font-variant-numeric: tabular-nums !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--s-ink-2) !important;
+  margin-top: 4px !important;
+}
+
+.sentry-toast-actions {
+  display: flex !important;
+  gap: 6px !important;
+  margin-top: 10px !important;
+}
+
+.sentry-toast-foot {
+  font-size: 11px !important;
+  color: var(--s-muted) !important;
+  margin-top: 10px !important;
+}
+
+.sentry-btn {
+  height: 28px !important;
+  padding: 0 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.005em !important;
+  cursor: pointer !important;
+  transition: background 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out !important;
+}
+
+.sentry-btn-primary {
+  background: var(--s-primary) !important;
+  color: #fff !important;
+  border-color: var(--s-primary) !important;
+}
+.sentry-btn-primary:hover {
+  background: var(--s-primary-hover) !important;
+  border-color: var(--s-primary-hover) !important;
+}
+
+.sentry-btn-ghost {
+  background: transparent !important;
+  color: var(--s-ink-2) !important;
+  border-color: transparent !important;
+}
+.sentry-btn-ghost:hover {
+  background: var(--s-surface) !important;
+  color: var(--s-ink) !important;
+}
+
+.sentry-toast-close {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  width: 22px !important;
+  height: 22px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  color: var(--s-muted) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+  transition: background 120ms ease-out, color 120ms ease-out !important;
+}
+.sentry-toast-close:hover {
+  background: var(--s-surface) !important;
+  color: var(--s-ink) !important;
+}
+
+.sentry-toast-confirm {
+  width: 240px !important;
+}
+.sentry-toast-confirm .sentry-toast-bar {
+  background: var(--s-success) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sentry-toast {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Subscription Sentry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@1,144,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- header -->
+    <header class="hd">
+      <div class="hd-l">
+        <div class="logo">
+          <span class="logo-dot"></span>
+          <span class="logo-name">Sentry</span>
+        </div>
+      </div>
+      <div class="hd-r">
+        <button class="icon-btn" id="btn-add" title="Add subscription" aria-label="Add subscription">
+          <!-- lucide: plus -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-options" title="Settings" aria-label="Settings">
+          <!-- lucide: settings -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- pending captures (toast notice inside popup) -->
+    <div id="pending-captures" class="pending-captures hidden"></div>
+
+    <!-- summary strip -->
+    <section class="summary" id="summary">
+      <div class="summary-stat">
+        <div class="stat-eyebrow">monthly</div>
+        <div class="stat-value" id="stat-month">$0.00</div>
+      </div>
+      <div class="summary-stat">
+        <div class="stat-eyebrow">yearly</div>
+        <div class="stat-value" id="stat-year">$0.00</div>
+      </div>
+      <div class="summary-stat">
+        <div class="stat-eyebrow">active</div>
+        <div class="stat-value" id="stat-count">0</div>
+      </div>
+    </section>
+
+    <!-- alert strip (price hike / shadow / trial ending) -->
+    <div id="alerts" class="alerts"></div>
+
+    <!-- tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="subs">Subscriptions</button>
+      <button class="tab" data-tab="calendar">Calendar</button>
+      <button class="tab" data-tab="insights">Insights</button>
+    </nav>
+
+    <!-- tab panes -->
+    <main class="pane-host">
+
+      <!-- SUBS PANE -->
+      <section class="pane active" data-pane="subs">
+        <div class="list-tools">
+          <input type="search" id="search" placeholder="Search" class="search-input" />
+          <select id="sort" class="sort-select">
+            <option value="renewal">Next renewal</option>
+            <option value="amount">Amount</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
+        <ul id="sub-list" class="sub-list"></ul>
+        <div id="empty-state" class="empty hidden">
+          <div class="empty-art">
+            <!-- lucide: inbox -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+          </div>
+          <div class="empty-title">Nothing tracked yet.</div>
+          <div class="empty-sub">Add one manually, or browse the web — Sentry detects signups on supported services.</div>
+          <div class="empty-actions">
+            <button class="btn" id="btn-add-empty">Add subscription</button>
+            <button class="btn btn-ghost" id="btn-seed">Load sample data</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CALENDAR PANE -->
+      <section class="pane" data-pane="calendar">
+        <div class="cal-head">
+          <button class="icon-btn cal-nav" id="cal-prev" aria-label="Previous month">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div class="cal-title" id="cal-title">—</div>
+          <button class="icon-btn cal-nav" id="cal-next" aria-label="Next month">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+        <div class="cal-dow"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-legend">
+          <span class="leg"><span class="dot dot-safe"></span> renewal</span>
+          <span class="leg"><span class="dot dot-soon"></span> ≤ 7d</span>
+          <span class="leg"><span class="dot dot-urgent"></span> ≤ 2d</span>
+        </div>
+      </section>
+
+      <!-- INSIGHTS PANE -->
+      <section class="pane" data-pane="insights">
+        <div class="insights-row">
+          <div class="card-pad">
+            <div class="card-eyebrow">spend by category</div>
+            <div id="cat-bars" class="cat-bars"></div>
+          </div>
+        </div>
+        <div class="insights-row">
+          <div class="card-pad">
+            <div class="card-eyebrow">recent activity</div>
+            <ul id="event-list" class="event-list"></ul>
+          </div>
+        </div>
+        <div class="insights-row">
+          <div class="card-pad recap">
+            <div class="recap-num" id="recap-num">$0</div>
+            <div class="recap-label">tracked this year</div>
+            <div class="recap-foot" id="recap-foot">No data yet.</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="ft">
+      <span class="ft-l">Local-only · No account</span>
+      <span class="ft-r">v0.1</span>
+    </footer>
+  </div>
+
+  <!-- detail drawer -->
+  <div id="drawer" class="drawer hidden" role="dialog" aria-hidden="true">
+    <div class="drawer-overlay" data-close></div>
+    <aside class="drawer-panel">
+      <header class="drawer-head">
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+        <div class="drawer-eyebrow" id="drawer-eyebrow">Subscription</div>
+        <div></div>
+      </header>
+      <div class="drawer-body" id="drawer-body"></div>
+    </aside>
+  </div>
+
+  <!-- add modal -->
+  <div id="add-modal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-overlay" data-close></div>
+    <div class="modal-panel">
+      <header class="modal-head">
+        <div class="modal-title">Add subscription</div>
+        <button class="icon-btn" data-close aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+      <div class="modal-body" id="add-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

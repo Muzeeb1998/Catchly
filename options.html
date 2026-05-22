@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sentry — Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@1,144,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- welcome (shown when ?welcome=1) -->
+    <section id="welcome" class="hidden">
+      <header class="page-head">
+        <div class="logo">
+          <span class="logo-dot"></span>
+          <span class="logo-name">Sentry</span>
+        </div>
+        <div class="page-eyebrow">welcome</div>
+      </header>
+
+      <h1 class="hello">Hello.</h1>
+      <p class="lede">
+        Sentry watches over your subscriptions — silently, locally, and without
+        ever touching your bank login. It detects sign-ups on supported services,
+        warns you before renewals, flags price hikes, and walks you through
+        cancelling things you've stopped using.
+      </p>
+
+      <div class="three">
+        <div class="three-col">
+          <div class="three-num">i</div>
+          <div class="three-title">Private by design</div>
+          <p class="three-body">Everything stays in your browser. No account. No Plaid. No data ever sent to a server.</p>
+        </div>
+        <div class="three-col">
+          <div class="three-num">ii</div>
+          <div class="three-title">Catches what banks miss</div>
+          <p class="three-body">App Store, PayPal, Stripe-via-merchant, and corporate-card subs bank-linked tools can't see.</p>
+        </div>
+        <div class="three-col">
+          <div class="three-num">iii</div>
+          <div class="three-title">Actually useful</div>
+          <p class="three-body">Price-hike alerts and shadow-charge detection — features competitors don't ship.</p>
+        </div>
+      </div>
+
+      <div class="welcome-cta">
+        <button class="btn" id="w-go">Open dashboard</button>
+        <button class="btn btn-ghost" id="w-seed">Load sample data</button>
+      </div>
+
+      <div class="welcome-foot">
+        Pin the Sentry icon to your toolbar so the days-until-next-renewal badge stays visible.
+      </div>
+    </section>
+
+    <!-- settings (shown by default) -->
+    <section id="settings">
+      <header class="page-head">
+        <div class="logo">
+          <span class="logo-dot"></span>
+          <span class="logo-name">Sentry</span>
+        </div>
+        <div class="page-eyebrow">settings</div>
+      </header>
+
+      <div class="grid">
+        <div class="card">
+          <h2 class="card-title">Notifications</h2>
+          <div class="row">
+            <label class="row-l">Remind me before renewal</label>
+            <div class="row-r">
+              <label class="chip"><input type="checkbox" data-rem="7">7d</label>
+              <label class="chip"><input type="checkbox" data-rem="3">3d</label>
+              <label class="chip"><input type="checkbox" data-rem="1">1d</label>
+            </div>
+          </div>
+          <div class="row">
+            <label class="row-l">Warn 24h before a free trial ends</label>
+            <div class="row-r"><label class="switch"><input type="checkbox" id="opt-trials"><span></span></label></div>
+          </div>
+          <div class="row">
+            <label class="row-l">Alert me about price hikes</label>
+            <div class="row-r"><label class="switch"><input type="checkbox" id="opt-hikes"><span></span></label></div>
+          </div>
+          <div class="row">
+            <label class="row-l">Flag shadow charges on rarely-used services</label>
+            <div class="row-r"><label class="switch"><input type="checkbox" id="opt-shadow"><span></span></label></div>
+          </div>
+          <div class="row">
+            <label class="row-l">Consider a service rarely used after</label>
+            <div class="row-r">
+              <input type="number" id="opt-threshold" min="14" max="365" step="1" class="num">
+              <span class="muted">days</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Display</h2>
+          <div class="row">
+            <label class="row-l">Default currency</label>
+            <div class="row-r">
+              <select id="opt-currency" class="sel">
+                <option>USD</option><option>EUR</option><option>GBP</option>
+                <option>CAD</option><option>AUD</option><option>JPY</option><option>INR</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <label class="row-l">Detect subscription pages while browsing</label>
+            <div class="row-r"><label class="switch"><input type="checkbox" id="opt-detect"><span></span></label></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Data</h2>
+          <p class="card-body muted">
+            Sentry only stores data in this browser. Nothing is uploaded. Export it any time, or wipe it completely.
+          </p>
+          <div class="row-actions">
+            <button class="btn btn-ghost" id="btn-export">Export JSON</button>
+            <button class="btn btn-ghost" id="btn-seed">Load sample data</button>
+            <button class="btn btn-ghost danger" id="btn-wipe">Wipe everything</button>
+          </div>
+        </div>
+
+        <div class="card card-foot">
+          <h2 class="card-title">About</h2>
+          <p class="card-body muted">
+            Sentry is an opinionated subscription tracker that runs entirely in your browser. No bank logins. No accounts. No data sold.
+          </p>
+          <p class="card-body muted">
+            <span class="kbd">v0.1</span> · MVP · the supported-services dictionary grows weekly.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>
