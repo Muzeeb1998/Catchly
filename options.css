@@ -143,6 +143,15 @@ input, select, textarea { font-family: inherit; color: inherit; }
   letter-spacing: -0.015em;
   color: var(--ink);
 }
+/* App icon in page-head (replaces the old .logo-dot square). */
+.logo-mark {
+  width: 20px; height: 20px;
+  border-radius: 5px;
+  display: block;
+  flex: 0 0 auto;
+  object-fit: cover;
+}
+/* Legacy dot rule kept in case any surface still references it. */
 .logo-dot {
   width: 8px; height: 8px;
   background: var(--primary);
