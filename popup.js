@@ -1,5 +1,10 @@
 // popup.js — the dashboard.
 // CHANGE LOG (most recent on top):
+//   Change 3 — brand logos everywhere. 32px brand-square (SVG from logos/ when
+//              service is known, else solid brand-color tile with first-letter
+//              monogram) replaces the old 24px monogram block on sub rows,
+//              pending captures, alert rows, drawer header (48px), and the
+//              quick-pick grid in the Add modal.
 //   Change 2 — sub-list now groups Active + Inactive into collapsible sections
 //              (chevron headers with counts, collapse state persisted via
 //              getUiState/setUiState in chrome.storage.local). Inactive rows
@@ -155,6 +160,23 @@ const ALERT_ICONS = {
   shadow: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`
 };
 
+// ----------------------------------------------------------------------------
+// brand square — 32px logo OR brand-color tile with first-letter monogram (Change 3)
+// ----------------------------------------------------------------------------
+function brandSquareHtml({ serviceKey, color, name, logo } = {}, size = 32) {
+  const svc = serviceKey ? SERVICES[serviceKey] : null;
+  const logoPath = logo || svc?.logo || null;
+  const brand = color || svc?.color || '#15110C';
+  const displayName = name || svc?.name || '';
+  const initial = (displayName || '?').trim().charAt(0).toUpperCase() || '?';
+  const radius = size >= 40 ? 8 : 6;
+  const fontSize = Math.max(10, Math.round(size * 0.45));
+  if (logoPath) {
+    return `<span class="brand-square" style="width:${size}px;height:${size}px;border-radius:${radius}px;"><img src="${esc(logoPath)}" alt="" width="${size}" height="${size}" loading="lazy"/></span>`;
+  }
+  return `<span class="brand-square brand-fallback" style="width:${size}px;height:${size}px;border-radius:${radius}px;background:${esc(brand)};font-size:${fontSize}px;">${esc(initial)}</span>`;
+}
+
 async function renderAlerts() {
   const host = document.getElementById('alerts');
   host.innerHTML = '';
@@ -171,6 +193,7 @@ async function renderAlerts() {
         items.push({
           color: 'rust',
           icon: 'hike',
+          subRef: sub,
           title: `${sub.name} went up ${fmtMoney(delta, sub.currency)}`,
           sub: `${fmtMoney(sub.previousAmount, sub.currency)} → ${fmtMoney(sub.amount, sub.currency)} / ${sub.cycle}`,
           action: 'Review',
@@ -186,6 +209,7 @@ async function renderAlerts() {
         items.push({
           color: 'clay',
           icon: 'trial',
+          subRef: sub,
           title: `Free trial: ${sub.name} ends ${d === 0 ? 'today' : `in ${d}d`}`,
           sub: `Will auto-charge ${fmtMoney(sub.amount, sub.currency)} unless cancelled`,
           action: 'Cancel',
@@ -205,6 +229,7 @@ async function renderAlerts() {
         items.push({
           color: '',
           icon: 'shadow',
+          subRef: sub,
           title: `Shadow charge: ${sub.name}`,
           sub: `Renews in ${dRenew}d. You haven't visited in ${lastVisit} days.`,
           action: 'Review',
@@ -228,7 +253,9 @@ async function renderAlerts() {
     const el = document.createElement('div');
     el.className = `alert ${a.color ? 'alert-' + a.color : ''}`;
     const iconSvg = ALERT_ICONS[a.icon] || '';
+    const brandHtml = a.subRef ? brandSquareHtml(a.subRef, 28) : '';
     el.innerHTML = `
+      ${brandHtml}
       ${iconSvg ? `<div class="alert-icon">${iconSvg}</div>` : ''}
       <div class="alert-body">
         <div class="alert-title">${esc(a.title)}</div>
@@ -365,18 +392,14 @@ function buildSubItem(sub, inactive) {
   li.setAttribute('role', 'button');
   li.setAttribute('aria-label', `${sub.name}, ${fmtMoney(sub.amount || 0, sub.currency)} per ${sub.cycle || 'month'}`);
 
-  const brand = (sub.color || '#15110C').replace(/^#/, '');
-  const tintBg = `#${brand}1F`;
-  const ringBorder = `#${brand}40`;
-  const fgColor = `#${brand}`;
-  const initial = (sub.name || '?').trim().charAt(0).toUpperCase();
+  const brand = brandSquareHtml(sub, 32);
 
   if (inactive) {
     const cancelledLabel = sub.cancelledAt
       ? `Cancelled ${fmtDate(sub.cancelledAt)}`
       : 'Cancelled';
     li.innerHTML = `
-      <div class="sub-dot" style="background:${tintBg};color:${fgColor};box-shadow:inset 0 0 0 1px ${ringBorder};">${esc(initial)}</div>
+      ${brand}
       <div class="sub-main">
         <div class="sub-name">${esc(sub.name)}</div>
         <div class="sub-meta">${esc(cancelledLabel)}</div>
@@ -391,7 +414,7 @@ function buildSubItem(sub, inactive) {
     const whenClass = u === 'safe' ? '' : `when-${u}`;
     const hike = sub.previousAmount && sub.amount > sub.previousAmount;
     li.innerHTML = `
-      <div class="sub-dot" style="background:${tintBg};color:${fgColor};box-shadow:inset 0 0 0 1px ${ringBorder};">${esc(initial)}</div>
+      ${brand}
       <div class="sub-main">
         <div class="sub-name">
           ${esc(sub.name)}
@@ -616,7 +639,7 @@ function openDrawer(subId) {
 
   body.innerHTML = `
     <div class="detail-hero">
-      <div class="detail-dot" style="background:${esc(sub.color || '#15110C')}"></div>
+      ${brandSquareHtml(sub, 48)}
       <div style="flex:1;min-width:0;">
         <div class="detail-title">${esc(sub.name)}</div>
         <div class="detail-sub">${esc([sub.plan, sub.category].filter(Boolean).join(' · '))}</div>
@@ -690,7 +713,7 @@ async function renderPendingCaptures() {
     const wrap = document.createElement('div');
     wrap.className = 'capture';
     wrap.innerHTML = `
-      <div class="capture-dot" style="background:${esc(p.color || '#15110C')}"></div>
+      ${brandSquareHtml({ serviceKey: p.serviceKey, color: p.color, name: p.name }, 32)}
       <div class="capture-body">
         <div class="capture-eyebrow">${dup ? 'looks like a duplicate' : 'detected — add?'}</div>
         <div class="capture-name">${esc(p.name)}</div>
@@ -791,8 +814,8 @@ function openAddModal(editing = null) {
       <div class="service-grid" id="svc-grid">
         ${services.map(s => `
           <button class="service-pick" data-pick="${esc(s.key)}" data-name="${esc(s.name.toLowerCase())}">
-            <span class="pick-dot" style="background:${esc(s.color)}"></span>
-            <span>${esc(s.name)}</span>
+            ${brandSquareHtml({ serviceKey: s.key, color: s.color, name: s.name, logo: s.logo }, 20)}
+            <span class="pick-name">${esc(s.name)}</span>
           </button>
         `).join('')}
       </div>

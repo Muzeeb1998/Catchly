@@ -157,13 +157,12 @@ input, select, textarea { font-family: inherit; color: inherit; }
 }
 .capture {
   display: grid;
-  grid-template-columns: 4px 1fr auto;
+  grid-template-columns: 32px 1fr auto;
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
   background: var(--surface);
 }
-.capture-dot { width: 4px; height: 28px; border-radius: 2px; }
 .capture-body { min-width: 0; }
 .capture-eyebrow {
   font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
@@ -463,7 +462,7 @@ input:focus, select:focus,
 }
 .sub-item {
   display: grid;
-  grid-template-columns: 24px 1fr auto;
+  grid-template-columns: 32px 1fr auto;
   gap: 12px;
   align-items: center;
   padding: 10px 8px;
@@ -479,16 +478,42 @@ input:focus, select:focus,
   background: var(--surface-2);
 }
 .sub-item:last-child { border-bottom: none; }
+/* Legacy .sub-dot — kept for backward compat; brand-square is preferred (Change 3) */
 .sub-dot {
-  width: 24px; height: 24px;
-  border-radius: 5px;
+  width: 32px; height: 32px;
+  border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 11px; font-weight: 600;
+  font-family: var(--font-ui);
+  font-size: 14px; font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
   flex-shrink: 0;
-  /* monogram colors set inline via brand color */
+}
+
+/* ---------- brand square (Change 3) ----------
+   32px tile with either an SVG logo or first-letter monogram on brand color.
+   Single helper covers sub rows, captures, alerts, drawer hero, quick-pick. */
+.brand-square {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  user-select: none;
+}
+.brand-square img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.brand-fallback {
+  line-height: 1;
 }
 .sub-main { min-width: 0; }
 .sub-name {
@@ -1004,11 +1029,18 @@ input:focus, select:focus,
   background: var(--surface-2);
   border-color: var(--border-strong);
 }
+/* Legacy .pick-dot kept for any callers; quick-pick now uses .brand-square */
 .pick-dot {
   width: 6px; height: 6px;
   border-radius: 2px;
   flex: 0 0 auto;
   display: inline-block;
+}
+.pick-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---------- settings pane (Change 1) ---------- */
