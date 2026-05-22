@@ -58,6 +58,37 @@
   }
 }
 
+/* Utility theme for the in-page toast — matches popup/options Utility palette.
+   Selector is the same .sentry-toast root but qualified with [data-theme="utility"]
+   which content.js sets when the user's stored theme is "utility". */
+.sentry-toast[data-theme="utility"] {
+  --s-canvas:        #F7F8FA !important;
+  --s-surface:       #FFFFFF !important;
+  --s-border:        #E3E8EF !important;
+  --s-border-strong: #C7D0DC !important;
+  --s-ink:           #0A1628 !important;
+  --s-ink-2:         #2E3A4F !important;
+  --s-muted:         #6B7689 !important;
+  --s-primary:       #F5D547 !important;
+  --s-primary-hover: #C9A816 !important;
+  --s-success:       #00875A !important;
+}
+@media (prefers-color-scheme: dark) {
+  .sentry-toast[data-theme="utility"] {
+    --s-canvas:        #0A1628 !important;
+    --s-surface:       #131F33 !important;
+    --s-border:        #26344A !important;
+    --s-border-strong: #34465F !important;
+    --s-ink:           #F4F6FA !important;
+    --s-ink-2:         #C9D2DD !important;
+    --s-muted:         #6B7689 !important;
+    --s-primary:       #F5D547 !important;
+    --s-primary-hover: #FFDC1E !important;
+    --s-success:       #6BCB77 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+  }
+}
+
 .sentry-toast.sentry-toast-in {
   opacity: 1 !important;
   transform: translateY(0) !important;

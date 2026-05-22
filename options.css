@@ -67,6 +67,45 @@
   --danger:        #E0675F;
 }
 
+/* ---------- Utility theme (off-white + yellow) ----------
+   Brief tokens (--paper/--rust/--clay/--leaf/--amber) remapped onto the
+   existing Swiss token names. Specificity (0,1,1) equal to the Editorial-dark
+   block; source order wins so this overrides in dark mode. */
+:root[data-theme="utility"] {
+  --canvas:        #F7F8FA;
+  --surface:       #FFFFFF;
+  --surface-2:     #EEF1F6;
+  --border:        #E3E8EF;
+  --border-strong: #C7D0DC;
+  --ink:           #0A1628;
+  --ink-2:         #2E3A4F;
+  --muted:         #6B7689;
+  --primary:       #F5D547;
+  --primary-hover: #C9A816;
+  --primary-soft:  #FDF8D4;
+  --success:       #00875A;
+  --warning:       #F5D547;
+  --danger:        #B42318;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="utility"] {
+    --canvas:        #0A1628;
+    --surface:       #131F33;
+    --surface-2:     #1C2A40;
+    --border:        #26344A;
+    --border-strong: #34465F;
+    --ink:           #F4F6FA;
+    --ink-2:         #C9D2DD;
+    --muted:         #6B7689;
+    --primary:       #F5D547;
+    --primary-hover: #FFDC1E;
+    --primary-soft:  #2A2410;
+    --success:       #6BCB77;
+    --warning:       #F5D547;
+    --danger:        #FF6B6B;
+  }
+}
+
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {

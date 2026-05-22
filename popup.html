@@ -3,6 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <title>Catchly</title>
+  <!-- Early-paint theme bootstrap (Part A) — runs before stylesheets so the
+       first paint matches the user's stored theme. Reads sessionStorage
+       synchronously, reconciles with chrome.storage.local async. -->
+  <script>
+  (function () {
+    var VALID = { system: 1, editorial: 1, utility: 1 };
+    function apply(t) {
+      if (!VALID[t]) t = 'system';
+      document.documentElement.setAttribute('data-theme', t);
+    }
+    try { apply(sessionStorage.getItem('catchly_theme_cache') || 'system'); }
+    catch (e) { apply('system'); }
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get('settings_v1', function (res) {
+        var stored = res && res.settings_v1 && res.settings_v1.theme;
+        var t = VALID[stored] ? stored : 'system';
+        try { sessionStorage.setItem('catchly_theme_cache', t); } catch (e) {}
+        if (document.documentElement.getAttribute('data-theme') !== t) apply(t);
+      });
+    }
+  })();
+  </script>
   <link rel="stylesheet" href="fonts/fonts.css" />
   <link rel="stylesheet" href="popup.css" />
 </head>

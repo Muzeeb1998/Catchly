@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — Theme tokens: System / Editorial / Utility (Part A + B)
+
+Added a Utility theme (off-white + yellow accent) alongside the existing Editorial baseline (current Swiss white + blue), both with light + dark variants gated on `prefers-color-scheme`. New token blocks live under `:root[data-theme="utility"]` in popup.css + options.css and `.sentry-toast[data-theme="utility"]` in content.css — no component CSS was rewritten, no fonts touched. Inline `<head>` script in popup.html + options.html sets `data-theme` before stylesheets parse (reads sessionStorage synchronously, reconciles with `chrome.storage.local.settings_v1.theme` async). Storage default theme bumped from `'auto'` to `'system'`. Dropdown UI + JS wiring follow in Part C/D/E.
+
 ## Unreleased — Part C: Cloudflare Worker endpoint
 
 The waitlist now has a deployable backend. A single Cloudflare Worker (`worker/waitlist-worker.js`) accepts POST `/signup` requests, validates the email server-side, and writes one entry per signup to a Workers KV namespace. No IP, no user-agent, no headers persisted — only the four fields the client sends (email, source, version, dismissedCount).
