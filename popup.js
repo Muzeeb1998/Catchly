@@ -37,8 +37,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   wireCalendarNav();
   wireDrawer();
   wireModal();
+  wireKeyboard();
   await renderPendingCaptures();
 });
+
+function wireKeyboard() {
+  document.addEventListener('keydown', (e) => {
+    const tag = (e.target && e.target.tagName) || '';
+    const inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('add-modal');
+      const drawer = document.getElementById('drawer');
+      if (modal && !modal.classList.contains('hidden')) { closeAddModal(); return; }
+      if (drawer && !drawer.classList.contains('hidden')) { closeDrawer(); return; }
+    }
+    if (e.key === '/' && !inField) {
+      const s = document.getElementById('search');
+      if (s) { e.preventDefault(); s.focus(); s.select(); }
+    }
+  });
+}
 
 async function refresh() {
   state.subs = await getAllSubs();
@@ -102,6 +120,12 @@ function renderSummary() {
 // ----------------------------------------------------------------------------
 // alerts: price hikes, shadow charges, trials ending
 // ----------------------------------------------------------------------------
+const ALERT_ICONS = {
+  hike:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+  trial:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/></svg>`,
+  shadow: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`
+};
+
 async function renderAlerts() {
   const host = document.getElementById('alerts');
   host.innerHTML = '';
@@ -117,6 +141,7 @@ async function renderAlerts() {
       if (delta > 0) {
         items.push({
           color: 'rust',
+          icon: 'hike',
           title: `${sub.name} went up ${fmtMoney(delta, sub.currency)}`,
           sub: `${fmtMoney(sub.previousAmount, sub.currency)} → ${fmtMoney(sub.amount, sub.currency)} / ${sub.cycle}`,
           action: 'Review',
@@ -131,6 +156,7 @@ async function renderAlerts() {
       if (d !== null && d >= 0 && d <= 3) {
         items.push({
           color: 'clay',
+          icon: 'trial',
           title: `Free trial: ${sub.name} ends ${d === 0 ? 'today' : `in ${d}d`}`,
           sub: `Will auto-charge ${fmtMoney(sub.amount, sub.currency)} unless cancelled`,
           action: 'Cancel',
@@ -149,6 +175,7 @@ async function renderAlerts() {
       ) {
         items.push({
           color: '',
+          icon: 'shadow',
           title: `Shadow charge: ${sub.name}`,
           sub: `Renews in ${dRenew}d. You haven't visited in ${lastVisit} days.`,
           action: 'Review',
@@ -170,7 +197,9 @@ async function renderAlerts() {
   for (const a of unique.slice(0, 4)) {
     const el = document.createElement('div');
     el.className = `alert ${a.color ? 'alert-' + a.color : ''}`;
+    const iconSvg = ALERT_ICONS[a.icon] || '';
     el.innerHTML = `
+      ${iconSvg ? `<div class="alert-icon">${iconSvg}</div>` : ''}
       <div class="alert-body">
         <div class="alert-title">${esc(a.title)}</div>
         <div class="alert-sub">${esc(a.sub)}</div>
@@ -232,8 +261,15 @@ function renderSubList() {
     const whenClass = u === 'safe' ? '' : `when-${u}`;
     const hike = sub.previousAmount && sub.amount > sub.previousAmount;
 
+    const brand = (sub.color || '#15110C').replace(/^#/, '');
+    // 8-digit hex with low alpha for tint background; full color for foreground letter
+    const tintBg = `#${brand}1F`;
+    const ringBorder = `#${brand}40`;
+    const fgColor = `#${brand}`;
+    const initial = (sub.name || '?').trim().charAt(0).toUpperCase();
+
     li.innerHTML = `
-      <div class="sub-dot" style="background:${esc(sub.color || '#15110C')}"></div>
+      <div class="sub-dot" style="background:${tintBg};color:${fgColor};box-shadow:inset 0 0 0 1px ${ringBorder};">${esc(initial)}</div>
       <div class="sub-main">
         <div class="sub-name">
           ${esc(sub.name)}
@@ -443,7 +479,7 @@ function openDrawer(subId) {
   const cancelInfo = SERVICES[sub.serviceKey];
 
   const hikeWarn = sub.previousAmount && sub.amount > sub.previousAmount
-    ? `<div class="detail-warn">Price went up from ${fmtMoney(sub.previousAmount, sub.currency)} to ${fmtMoney(sub.amount, sub.currency)} this cycle.</div>`
+    ? `<div class="detail-warn detail-warn-hike">Price went up from ${fmtMoney(sub.previousAmount, sub.currency)} to ${fmtMoney(sub.amount, sub.currency)} this cycle.</div>`
     : '';
 
   const trialWarn = sub.isTrial && sub.trialEndsAt
@@ -478,8 +514,8 @@ function openDrawer(subId) {
     ${stepsHtml}
 
     <div class="detail-actions">
-      ${sub.cancelUrl ? `<button class="btn btn-rust" id="d-cancel-open">Open cancel page</button>` : ''}
-      <button class="btn btn-ghost" id="d-mark-cancelled">Mark as cancelled (already done)</button>
+      ${sub.cancelUrl ? `<button class="btn" id="d-cancel-open">Open cancel page</button>` : ''}
+      <button class="btn btn-secondary" id="d-mark-cancelled">Mark as cancelled (already done)</button>
       <button class="btn btn-ghost" id="d-edit">Edit</button>
       <button class="btn btn-ghost" id="d-delete" style="color:var(--danger)">Delete</button>
     </div>
@@ -628,9 +664,10 @@ function openAddModal(editing = null) {
   body.innerHTML = `
     ${editing ? '' : `
       <div class="card-eyebrow" style="margin-bottom:8px;">quick-pick known services</div>
-      <div class="service-grid">
-        ${services.slice(0, 10).map(s => `
-          <button class="service-pick" data-pick="${esc(s.key)}">
+      <input id="svc-filter" class="service-filter" type="search" placeholder="Filter services" />
+      <div class="service-grid" id="svc-grid">
+        ${services.map(s => `
+          <button class="service-pick" data-pick="${esc(s.key)}" data-name="${esc(s.name.toLowerCase())}">
             <span class="pick-dot" style="background:${esc(s.color)}"></span>
             <span>${esc(s.name)}</span>
           </button>
@@ -707,6 +744,18 @@ function openAddModal(editing = null) {
       body.dataset.pickedKey = key;
     });
   });
+
+  // wire service filter
+  const svcFilter = body.querySelector('#svc-filter');
+  if (svcFilter) {
+    svcFilter.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      body.querySelectorAll('#svc-grid [data-pick]').forEach(btn => {
+        const name = btn.dataset.name || '';
+        btn.classList.toggle('hidden', q && !name.includes(q));
+      });
+    });
+  }
 
   body.querySelector('#f-save').addEventListener('click', async () => {
     const name = body.querySelector('#f-name').value.trim();
