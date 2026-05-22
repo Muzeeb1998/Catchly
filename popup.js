@@ -737,6 +737,16 @@ function openDrawer(subId) {
   });
   body.querySelector('#d-delete')?.addEventListener('click', async () => {
     if (!confirm(`Delete ${sub.name} from tracking?`)) return;
+    // Clear the scheduled alarms BEFORE removing the sub from storage.
+    // background.js scheduleAlarmsForSub clears these on every reschedule,
+    // but a deleted sub never gets rescheduled — without explicit clears
+    // here, the alarms stay registered until the daily check sweep finds
+    // them orphaned. Chrome enforces a 500-alarm cap per extension; power
+    // users with frequent add/delete cycles can hit it.
+    try {
+      await chrome.alarms.clear(`renewal_${sub.id}`);
+      await chrome.alarms.clear(`trial_${sub.id}`);
+    } catch {} // alarms API may be unavailable in rare contexts
     await deleteSub(sub.id);
     closeDrawer();
     await refresh();
