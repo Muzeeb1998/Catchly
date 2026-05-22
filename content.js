@@ -7,6 +7,31 @@
   if (window.__sentryContentLoaded) return;
   window.__sentryContentLoaded = true;
 
+  // ---------- theme (Part C) ----------
+  // Current theme value held in a module var; updated on init and again
+  // whenever the popup broadcasts 'theme_changed'. Applied to the toast
+  // root element when one is built / on the fly when one is open.
+  let __currentTheme = 'system';
+  const __VALID_THEMES = { system: 1, editorial: 1, utility: 1 };
+  try {
+    chrome.storage.local.get('settings_v1', (res) => {
+      const t = res && res.settings_v1 && res.settings_v1.theme;
+      if (__VALID_THEMES[t]) __currentTheme = t;
+      const open = document.getElementById('__sentry_toast');
+      if (open) open.setAttribute('data-theme', __currentTheme);
+    });
+  } catch {}
+  try {
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (!msg || msg.type !== 'theme_changed') return;
+      if (__VALID_THEMES[msg.theme]) {
+        __currentTheme = msg.theme;
+        const open = document.getElementById('__sentry_toast');
+        if (open) open.setAttribute('data-theme', __currentTheme);
+      }
+    });
+  } catch {}
+
   // ---------- detection ----------
   function looksLikeSubscriptionPage() {
     const text = (document.body && document.body.innerText || '').toLowerCase();
@@ -60,6 +85,7 @@
     root.className = 'sentry-toast';
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-label', 'Catchly — track this subscription?');
+    root.setAttribute('data-theme', __currentTheme);
 
     const priceStr = amount ? `$${amount.toFixed(2)}/${cycle === 'yearly' ? 'yr' : cycle === 'weekly' ? 'wk' : 'mo'}` : '';
     const label = isTrial ? 'Free trial detected' : 'Subscription detected';
@@ -120,6 +146,7 @@
   function showToastConfirmation() {
     const c = document.createElement('div');
     c.className = 'sentry-toast sentry-toast-confirm sentry-toast-in';
+    c.setAttribute('data-theme', __currentTheme);
     c.innerHTML = `
       <div class="sentry-toast-bar" style="background:#3D8B5C"></div>
       <div class="sentry-toast-body">

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — Theme dropdown + wiring (Part C/D/E)
+
+Replaced the popup Settings pane's Auto/Light/Dark segmented control with a native `<select>` dropdown carrying three options: System / Editorial / Utility. Selecting an option instantly applies `<html data-theme>`, writes to `sessionStorage["catchly_theme_cache"]` (fast path for next open) + `chrome.storage.local.settings_v1.theme`, and broadcasts `{type:'theme_changed'}` to every open tab via `chrome.tabs.sendMessage` so content.js can re-theme any visible capture toast. `setThemeAttr` whitelists the three values (legacy auto/light/dark collapse to 'system'). Utility theme gains scoped `[data-theme="utility"] .btn / .tab.active` overrides to fix white-on-yellow contrast.
+
 ## Unreleased — Theme tokens: System / Editorial / Utility (Part A + B)
 
 Added a Utility theme (off-white + yellow accent) alongside the existing Editorial baseline (current Swiss white + blue), both with light + dark variants gated on `prefers-color-scheme`. New token blocks live under `:root[data-theme="utility"]` in popup.css + options.css and `.sentry-toast[data-theme="utility"]` in content.css — no component CSS was rewritten, no fonts touched. Inline `<head>` script in popup.html + options.html sets `data-theme` before stylesheets parse (reads sessionStorage synchronously, reconciles with `chrome.storage.local.settings_v1.theme` async). Storage default theme bumped from `'auto'` to `'system'`. Dropdown UI + JS wiring follow in Part C/D/E.

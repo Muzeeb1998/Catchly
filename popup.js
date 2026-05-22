@@ -82,15 +82,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 function applyStoredTheme() {
   try {
     chrome.storage.local.get('settings_v1', (res) => {
-      const t = (res?.settings_v1?.theme) || 'auto';
+      const t = (res?.settings_v1?.theme) || 'system';
       setThemeAttr(t);
     });
   } catch {}
 }
+// Whitelist: system | editorial | utility. Legacy auto/light/dark from the
+// old segmented control collapse to 'system'. Always sets the attribute so
+// CSS rules selecting [data-theme="..."] can match deterministically.
 function setThemeAttr(theme) {
-  const root = document.documentElement;
-  if (theme === 'light' || theme === 'dark') root.setAttribute('data-theme', theme);
-  else root.removeAttribute('data-theme');
+  const valid = { system: 1, editorial: 1, utility: 1 };
+  const next = valid[theme] ? theme : 'system';
+  document.documentElement.setAttribute('data-theme', next);
 }
 
 function wireKeyboard() {
@@ -1033,16 +1036,32 @@ function closeAddModal() {
 // settings pane (Change 1)
 // ----------------------------------------------------------------------------
 function wireSettingsPane() {
-  // Theme segmented control
-  document.querySelectorAll('[data-theme-set]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const t = btn.dataset.themeSet;
+  // Theme dropdown (Part C) — replaces the old Auto/Light/Dark segmented
+  // control. Three options: system / editorial / utility. Apply instantly,
+  // persist to chrome.storage.local + sessionStorage cache, broadcast so
+  // content.js can re-theme any visible toast.
+  const themeSelect = document.getElementById('set-theme');
+  if (themeSelect) {
+    themeSelect.addEventListener('change', async (e) => {
+      const t = e.target.value;
       setThemeAttr(t);
+      try { sessionStorage.setItem('catchly_theme_cache', t); } catch {}
       await setSettings({ theme: t });
       state.settings = await getSettings();
-      syncSettingsPane();
+      // Broadcast to content scripts on every open tab so any visible
+      // capture toast re-themes. Must use chrome.tabs.sendMessage per tab —
+      // chrome.runtime.sendMessage from a popup does NOT reach content
+      // scripts running on web pages, only other extension pages + worker.
+      try {
+        const tabs = await chrome.tabs.query({});
+        for (const tab of tabs) {
+          if (!tab.id) continue;
+          try { await chrome.tabs.sendMessage(tab.id, { type: 'theme_changed', theme: t }); }
+          catch {} // tab may not have the content script (chrome://, store, etc.)
+        }
+      } catch {}
     });
-  });
+  }
 
   // Reminder day chips
   document.querySelectorAll('#settings-pane [data-rem]').forEach(input => {
@@ -1079,11 +1098,9 @@ function syncSettingsPane() {
   const s = state.settings;
   if (!s) return;
 
-  // Theme segmented active state
-  const theme = s.theme || 'auto';
-  document.querySelectorAll('[data-theme-set]').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.themeSet === theme);
-  });
+  // Theme dropdown selected value (Part C)
+  const themeSelect = document.getElementById('set-theme');
+  if (themeSelect) themeSelect.value = s.theme || 'system';
 
   // Reminder day chips
   document.querySelectorAll('#settings-pane [data-rem]').forEach(cb => {

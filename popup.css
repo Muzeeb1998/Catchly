@@ -1184,6 +1184,18 @@ input:focus, select:focus,
 
 /* compact select for settings */
 .sel-compact { height: 28px; padding: 0 8px; font-size: 12px; min-width: 88px; }
+/* Theme dropdown — same look as .sel-compact but wider so the long
+   descriptor options ("System (follows your OS)") don't truncate. */
+.sel-theme { height: 32px; padding: 0 10px; font-size: 12px; min-width: 200px; }
+
+/* Utility theme contrast overrides — --primary is yellow #F5D547, so the
+   default white-on-primary text in .btn fails WCAG. Scope the fix to
+   [data-theme="utility"] only; Editorial/System keep white-on-blue. */
+:root[data-theme="utility"] .btn { color: var(--ink); }
+:root[data-theme="utility"] .btn:hover { color: var(--ink); }
+:root[data-theme="utility"] .tab.active { color: var(--ink); }
+:root[data-theme="utility"] .bottom-tabs .tab.active { color: var(--ink); }
+:root[data-theme="utility"] .bottom-tabs .tab.active .tab-icon { color: var(--ink); }
 
 /* switch (compact, inline) */
 .switch {
