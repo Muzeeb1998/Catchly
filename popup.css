@@ -86,7 +86,7 @@ body {
   background: var(--canvas);
   color: var(--ink);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   font-feature-settings: 'ss01', 'cv11', 'cv02', 'cv03';
   -webkit-font-smoothing: antialiased;
