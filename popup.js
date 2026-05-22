@@ -976,59 +976,90 @@ function openAddModal(editing = null) {
   }
 
   body.querySelector('#f-save').addEventListener('click', async () => {
-    const name = body.querySelector('#f-name').value.trim();
-    if (!name) { alert('Name is required'); return; }
-    const rawAmount = body.querySelector('#f-amount').value;
-    const parsedAmount = parseFloat(rawAmount);
-    if (rawAmount && Number.isNaN(parsedAmount)) { alert('Amount must be a number'); return; }
-    const amount = Number.isFinite(parsedAmount) ? parsedAmount : 0;
-    if (amount < 0) { alert('Amount cannot be negative'); return; }
-    const currency = body.querySelector('#f-currency').value;
-    const cycle = body.querySelector('#f-cycle').value;
-    const startedRaw = body.querySelector('#f-started').value;
-    const renewalRaw = body.querySelector('#f-renewal').value;
-    if (!renewalRaw) { alert('Next renewal date is required'); return; }
-    const startedAt = startedRaw ? new Date(startedRaw).getTime() : Date.now();
-    const nextRenewal = new Date(renewalRaw).getTime();
-    if (Number.isNaN(nextRenewal)) { alert('Invalid renewal date'); return; }
-    const category = body.querySelector('#f-category').value.trim();
-    const plan = body.querySelector('#f-plan').value.trim();
-    const isTrial = body.querySelector('#f-trial').checked;
+    const saveBtn = body.querySelector('#f-save');
+    // P1 #TC-MANUAL-023: guard against rapid double-click that would otherwise
+    // run the whole save flow twice (duplicate reschedule_all broadcast,
+    // possible double-fire of the third-sub waitlist toast).
+    if (saveBtn.disabled) return;
+    saveBtn.disabled = true;
+    try {
+      const name = body.querySelector('#f-name').value.trim();
+      if (!name) { alert('Name is required'); return; }
+      // P1 #TC-MANUAL-018: parseFloat("9,99") silently returns 9. EU/IN users
+      // entering "9,99" used to lose 99 cents per sub without any warning.
+      // Normalize comma-as-decimal when no period is present, then parse.
+      const rawAmount = body.querySelector('#f-amount').value;
+      const normalizedAmount = (rawAmount && rawAmount.includes(',') && !rawAmount.includes('.'))
+        ? rawAmount.replace(',', '.')
+        : rawAmount;
+      const parsedAmount = parseFloat(normalizedAmount);
+      if (normalizedAmount && Number.isNaN(parsedAmount)) { alert('Amount must be a number'); return; }
+      const amount = Number.isFinite(parsedAmount) ? parsedAmount : 0;
+      if (amount < 0) { alert('Amount cannot be negative'); return; }
+      const currency = body.querySelector('#f-currency').value;
+      const cycle = body.querySelector('#f-cycle').value;
+      const startedRaw = body.querySelector('#f-started').value;
+      const renewalRaw = body.querySelector('#f-renewal').value;
+      if (!renewalRaw) { alert('Next renewal date is required'); return; }
+      const startedAt = startedRaw ? new Date(startedRaw).getTime() : Date.now();
+      const nextRenewal = new Date(renewalRaw).getTime();
+      if (Number.isNaN(nextRenewal)) { alert('Invalid renewal date'); return; }
+      const category = body.querySelector('#f-category').value.trim();
+      const plan = body.querySelector('#f-plan').value.trim();
+      const isTrial = body.querySelector('#f-trial').checked;
 
-    const pickedKey = body.dataset.pickedKey || editing?.serviceKey || null;
-    const svc = pickedKey ? SERVICES[pickedKey] : null;
+      const pickedKey = body.dataset.pickedKey || editing?.serviceKey || null;
+      const svc = pickedKey ? SERVICES[pickedKey] : null;
 
-    const id = editing?.id || uid('sub');
-    const previousAmount = editing && editing.amount !== amount ? editing.amount : editing?.previousAmount;
-    const sub = {
-      id,
-      serviceKey: pickedKey,
-      name,
-      plan,
-      amount,
-      previousAmount,
-      currency,
-      cycle,
-      startedAt,
-      nextRenewal,
-      status: 'active',
-      isTrial,
-      trialEndsAt: isTrial ? nextRenewal : null,
-      category: category || (svc?.category || 'Other'),
-      color: svc?.color || editing?.color || '#15110C',
-      cancelUrl: svc?.cancelUrl || editing?.cancelUrl || null
-    };
-    if (editing && previousAmount && previousAmount !== amount) {
-      await checkAndRecordPriceChange({ id, name, amount: previousAmount }, amount);
+      // P1 #TC-MANUAL-006: pending-capture flow ran findPotentialDuplicate
+      // but the manual add modal went straight to saveSub. Users could add
+      // Netflix three times with no warning. Run the same check for new
+      // (non-editing) manual adds; let the user confirm if they really want
+      // to add a duplicate.
+      if (!editing) {
+        const dup = await findPotentialDuplicate({ name, amount, serviceKey: pickedKey });
+        if (dup) {
+          const ok = confirm(
+            `Already tracking ${dup.name} at ${fmtMoney(dup.amount, dup.currency)} / ${dup.cycle}.\n\nAdd anyway as a second entry?`
+          );
+          if (!ok) return;
+        }
+      }
+
+      const id = editing?.id || uid('sub');
+      const previousAmount = editing && editing.amount !== amount ? editing.amount : editing?.previousAmount;
+      const sub = {
+        id,
+        serviceKey: pickedKey,
+        name,
+        plan,
+        amount,
+        previousAmount,
+        currency,
+        cycle,
+        startedAt,
+        nextRenewal,
+        status: 'active',
+        isTrial,
+        trialEndsAt: isTrial ? nextRenewal : null,
+        category: category || (svc?.category || 'Other'),
+        color: svc?.color || editing?.color || '#15110C',
+        cancelUrl: svc?.cancelUrl || editing?.cancelUrl || null
+      };
+      if (editing && previousAmount && previousAmount !== amount) {
+        await checkAndRecordPriceChange({ id, name, amount: previousAmount }, amount);
+      }
+      await saveSub(sub);
+      await chrome.runtime.sendMessage({ type: 'reschedule_all' });
+      closeAddModal();
+      const wasNew = !editing;
+      await refresh();
+      // Third-sub waitlist trigger — only on a NEW manual add (not edit), and
+      // only when active count just hit exactly 3. (Part B3)
+      if (wasNew) await maybeShowThirdSubToast();
+    } finally {
+      saveBtn.disabled = false;
     }
-    await saveSub(sub);
-    await chrome.runtime.sendMessage({ type: 'reschedule_all' });
-    closeAddModal();
-    const wasNew = !editing;
-    await refresh();
-    // Third-sub waitlist trigger — only on a NEW manual add (not edit), and
-    // only when active count just hit exactly 3. (Part B3)
-    if (wasNew) await maybeShowThirdSubToast();
   });
 
   document.getElementById('add-modal').classList.remove('hidden');
