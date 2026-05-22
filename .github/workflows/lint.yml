@@ -1,0 +1,54 @@
+name: lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax:
+    name: node --check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Syntax-check all JS files
+        run: |
+          set -e
+          for f in \
+            background.js \
+            content.js \
+            popup.js \
+            options.js \
+            theme-bootstrap.js \
+            lib/storage.js \
+            lib/utils.js \
+            lib/merchants.js \
+            lib/waitlist.js \
+            worker/waitlist-worker.js \
+          ; do
+            echo "node --check $f"
+            node --check "$f"
+          done
+
+      - name: Validate manifest.json
+        run: python3 -c "import json; json.load(open('manifest.json'))"
+
+      - name: CSS brace balance
+        run: |
+          set -e
+          for f in popup.css options.css content.css; do
+            o=$(grep -o '{' "$f" | wc -l)
+            c=$(grep -o '}' "$f" | wc -l)
+            if [ "$o" != "$c" ]; then
+              echo "FAIL: $f braces unbalanced ($o open / $c close)"
+              exit 1
+            fi
+            echo "OK: $f ($o/$c)"
+          done
