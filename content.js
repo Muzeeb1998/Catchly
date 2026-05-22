@@ -109,7 +109,14 @@
 
     requestAnimationFrame(() => root.classList.add('sentry-toast-in'));
 
+    // Auto-dismiss timer set below; dismiss() clears it so the manual-dismiss
+    // path doesn't leave a 25s timeout firing on an already-removed node.
+    let autoDismissTimer = null;
     const dismiss = () => {
+      if (autoDismissTimer !== null) {
+        clearTimeout(autoDismissTimer);
+        autoDismissTimer = null;
+      }
       root.classList.remove('sentry-toast-in');
       setTimeout(() => root.remove(), 250);
     };
@@ -140,7 +147,7 @@
     });
 
     // Auto-dismiss after 25 seconds if untouched
-    setTimeout(dismiss, 25000);
+    autoDismissTimer = setTimeout(dismiss, 25000);
   }
 
   function showToastConfirmation() {
