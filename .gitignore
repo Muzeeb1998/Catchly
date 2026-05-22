@@ -1,0 +1,13 @@
+# macOS Finder metadata
+.DS_Store
+
+# Stray scratch folder left over from earlier exports
+logos/Product Audit(15/
+
+# Local QA reports (kept locally; uncomment if you want them in the repo)
+# .gstack/
+
+# Wrangler local state (the published wrangler.toml is checked in)
+worker/.wrangler/
+worker/wrangler.local.toml
+worker/node_modules/
