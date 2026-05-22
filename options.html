@@ -45,10 +45,41 @@
         </div>
       </div>
 
+      <!-- waitlist card (Part A1) -->
+      <section class="waitlist-card" id="welcome-waitlist" aria-labelledby="welcome-waitlist-title">
+        <div class="waitlist-eyebrow" id="welcome-waitlist-eyebrow"></div>
+        <h2 class="waitlist-title" id="welcome-waitlist-title"></h2>
+        <p class="waitlist-body" id="welcome-waitlist-body"></p>
+
+        <form class="waitlist-form" id="welcome-waitlist-form" novalidate>
+          <input type="email" id="welcome-waitlist-email" class="waitlist-input" autocomplete="email" required />
+          <button class="btn" type="submit" id="welcome-waitlist-submit"></button>
+        </form>
+        <div class="waitlist-error hidden" id="welcome-waitlist-error" role="alert"></div>
+
+        <p class="waitlist-incentive" id="welcome-waitlist-incentive"></p>
+        <p class="waitlist-privacy" id="welcome-waitlist-privacy"></p>
+
+        <!-- confirmed state (swapped in when state.email is set) -->
+        <div class="waitlist-confirmed hidden" id="welcome-waitlist-confirmed">
+          <div class="waitlist-confirmed-row">
+            <span class="waitlist-check" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </span>
+            <span>You're on the list as <strong id="welcome-waitlist-confirmed-email"></strong></span>
+          </div>
+          <div class="waitlist-confirmed-body" id="welcome-waitlist-confirmed-body"></div>
+          <button class="btn btn-ghost btn-sm" id="welcome-waitlist-change">Change email</button>
+        </div>
+      </section>
+
+      <div class="meanwhile-divider"><span id="meanwhile-label"></span></div>
+
       <div class="welcome-cta">
-        <button class="btn" id="w-go">Open dashboard</button>
-        <button class="btn btn-ghost" id="w-seed">Load sample data</button>
+        <button class="btn" id="w-go"></button>
+        <button class="btn btn-ghost" id="w-seed"></button>
       </div>
+      <p class="welcome-cta-note" id="welcome-cta-note"></p>
 
       <div class="welcome-foot">
         Pin the Sentry icon to your toolbar so the days-until-next-renewal badge stays visible.
@@ -66,6 +97,35 @@
       </header>
 
       <div class="grid">
+
+        <!-- waitlist settings card (Part A2) -->
+        <div class="card waitlist-settings" id="settings-waitlist">
+          <div class="waitlist-settings-head">
+            <div class="waitlist-eyebrow" id="settings-waitlist-eyebrow"></div>
+            <span class="status-pill" id="settings-waitlist-status"></span>
+          </div>
+          <h2 class="card-title waitlist-title-tight" id="settings-waitlist-title"></h2>
+          <p class="card-body" id="settings-waitlist-body"></p>
+
+          <form class="waitlist-form" id="settings-waitlist-form" novalidate>
+            <input type="email" id="settings-waitlist-email" class="waitlist-input" autocomplete="email" required />
+            <button class="btn" type="submit" id="settings-waitlist-submit"></button>
+          </form>
+          <div class="waitlist-error hidden" id="settings-waitlist-error" role="alert"></div>
+          <p class="waitlist-privacy" id="settings-waitlist-privacy"></p>
+
+          <div class="waitlist-confirmed hidden" id="settings-waitlist-confirmed">
+            <div class="waitlist-confirmed-row">
+              <span class="waitlist-check" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              </span>
+              <span>You're on the list as <strong id="settings-waitlist-confirmed-email"></strong></span>
+            </div>
+            <div class="waitlist-confirmed-body" id="settings-waitlist-confirmed-body"></div>
+            <button class="btn btn-ghost btn-sm" id="settings-waitlist-change">Change email</button>
+          </div>
+        </div>
+
         <div class="card">
           <h2 class="card-title">Notifications</h2>
           <div class="row">

@@ -358,6 +358,189 @@ input:focus, select:focus, .num:focus, .sel:focus {
   color: var(--ink-2);
 }
 
+/* ---------- waitlist surfaces (Part A) ----------
+   Welcome card sits between the three-column value props and the
+   "meanwhile" divider. Settings card sits at the top of the grid.
+   Same visual building blocks: eyebrow, title, body, form, privacy
+   note, optional incentive line, confirmed state. */
+.waitlist-card {
+  background: var(--canvas);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  margin: 0 0 24px;
+}
+.waitlist-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin: 0 0 8px;
+}
+.waitlist-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+.waitlist-title-tight {
+  margin: 0 0 6px;
+  padding: 0;
+  border: none;
+  font-size: 15px;
+}
+.waitlist-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0 0 16px;
+  max-width: 52ch;
+}
+.waitlist-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.waitlist-input {
+  height: 36px;
+  padding: 0 12px;
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-input);
+  font-size: 13px;
+  font-family: var(--font-ui);
+  outline: none;
+  transition: border-color var(--t-fast);
+}
+.waitlist-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+.waitlist-form .btn { height: 36px; }
+.waitlist-incentive {
+  font-size: 12px;
+  color: var(--ink-2);
+  margin: 12px 0 0;
+}
+.waitlist-privacy {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+  margin: 4px 0 0;
+}
+.waitlist-error {
+  font-size: 12px;
+  color: var(--danger);
+  margin: 6px 0 0;
+}
+
+/* settings variant — sits inside an existing .card */
+.waitlist-settings .waitlist-form { margin-top: 12px; }
+.waitlist-settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+.status-pill::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warning);
+}
+
+/* confirmed state */
+.waitlist-confirmed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.waitlist-confirmed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink);
+}
+.waitlist-confirmed-row strong {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+}
+.waitlist-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--success);
+  color: #fff;
+  flex: 0 0 auto;
+}
+.waitlist-confirmed-body {
+  font-size: 12px;
+  color: var(--muted);
+}
+.waitlist-confirmed .btn-sm {
+  align-self: flex-start;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+/* meanwhile divider — sits between the waitlist card and the welcome CTAs */
+.meanwhile-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+.meanwhile-divider::before,
+.meanwhile-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.meanwhile-divider span {
+  padding: 0 12px;
+}
+.welcome-cta-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
