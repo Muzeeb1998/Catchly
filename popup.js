@@ -47,6 +47,7 @@ const state = {
 // ----------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', async () => {
   applyStoredTheme();
+  wireBrandSquareFallback();
   await refresh();
   wireHeader();
   wireTabs();
@@ -161,20 +162,49 @@ const ALERT_ICONS = {
 };
 
 // ----------------------------------------------------------------------------
-// brand square — 32px logo OR brand-color tile with first-letter monogram (Change 3)
+// brand square — real brand logo from simpleicons.org CDN over a brand-color
+// tile. Falls back to first-letter monogram on the brand tile if the CDN
+// fetch fails (handled by a single global error listener wired at boot to
+// avoid inline onerror handlers, which MV3 CSP blocks). (Change 3)
 // ----------------------------------------------------------------------------
-function brandSquareHtml({ serviceKey, color, name, logo } = {}, size = 32) {
+function cdnLogoUrl(slug) {
+  // Simple Icons colorized endpoint: returns the official monochrome mark
+  // tinted to the given hex (no #). We use FFFFFF so the mark sits on top
+  // of our brand-color tile.
+  return `https://cdn.simpleicons.org/${encodeURIComponent(slug)}/FFFFFF`;
+}
+
+function brandSquareHtml({ serviceKey, color, name, logo, cdnSlug } = {}, size = 32) {
   const svc = serviceKey ? SERVICES[serviceKey] : null;
-  const logoPath = logo || svc?.logo || null;
+  const slug = cdnSlug || svc?.cdnSlug || null;
   const brand = color || svc?.color || '#15110C';
   const displayName = name || svc?.name || '';
   const initial = (displayName || '?').trim().charAt(0).toUpperCase() || '?';
   const radius = size >= 40 ? 8 : 6;
   const fontSize = Math.max(10, Math.round(size * 0.45));
-  if (logoPath) {
-    return `<span class="brand-square" style="width:${size}px;height:${size}px;border-radius:${radius}px;"><img src="${esc(logoPath)}" alt="" width="${size}" height="${size}" loading="lazy"/></span>`;
+  const imgSize = Math.round(size * 0.6);
+  const styleTile = `width:${size}px;height:${size}px;border-radius:${radius}px;background:${esc(brand)};`;
+  if (slug) {
+    return `<span class="brand-square" data-initial="${esc(initial)}" data-fs="${fontSize}" style="${styleTile}"><img src="${cdnLogoUrl(slug)}" alt="" width="${imgSize}" height="${imgSize}" loading="lazy"/></span>`;
   }
-  return `<span class="brand-square brand-fallback" style="width:${size}px;height:${size}px;border-radius:${radius}px;background:${esc(brand)};font-size:${fontSize}px;">${esc(initial)}</span>`;
+  // Fallback: solid brand bg + white letter
+  return `<span class="brand-square brand-fallback" style="${styleTile}font-size:${fontSize}px;">${esc(initial)}</span>`;
+}
+
+// Global error fallback — if the CDN image fails (offline, CDN down, slug
+// not found), swap the broken <img> for the first-letter monogram. Capture
+// phase because <img> error events don't bubble. Registered once at boot.
+function wireBrandSquareFallback() {
+  document.addEventListener('error', (e) => {
+    const img = e.target;
+    if (!(img instanceof HTMLImageElement)) return;
+    const parent = img.closest('.brand-square');
+    if (!parent || !parent.dataset.initial) return;
+    img.remove();
+    parent.classList.add('brand-fallback');
+    parent.style.fontSize = parent.dataset.fs + 'px';
+    parent.textContent = parent.dataset.initial;
+  }, true);
 }
 
 async function renderAlerts() {

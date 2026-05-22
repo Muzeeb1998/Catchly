@@ -491,8 +491,9 @@ input:focus, select:focus,
 }
 
 /* ---------- brand square (Change 3) ----------
-   32px tile with either an SVG logo or first-letter monogram on brand color.
-   Single helper covers sub rows, captures, alerts, drawer hero, quick-pick. */
+   Brand-color tile with either a CDN-served SVG mark on top (inset ~60%)
+   or first-letter monogram fallback. Single helper covers sub rows,
+   captures, alerts, drawer hero, quick-pick. */
 .brand-square {
   display: inline-flex;
   align-items: center;
@@ -505,12 +506,12 @@ input:focus, select:focus,
   text-transform: uppercase;
   color: #FFFFFF;
   user-select: none;
+  position: relative;
 }
 .brand-square img {
-  width: 100%;
-  height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  /* Inline width/height attrs drive the inset size — do not stretch. */
 }
 .brand-fallback {
   line-height: 1;
