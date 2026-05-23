@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   wireHeader();
   wireTabs();
   wireListTools();
+  wireCalendarNav();
   wireDrawer();
   wireModal();
   wireKeyboard();
@@ -103,8 +104,10 @@ function wireKeyboard() {
     if (e.key === 'Escape') {
       const modal = document.getElementById('add-modal');
       const drawer = document.getElementById('drawer');
+      const calDrawer = document.getElementById('calendar-drawer');
       if (modal && !modal.classList.contains('hidden')) { closeAddModal(); return; }
       if (drawer && !drawer.classList.contains('hidden')) { closeDrawer(); return; }
+      if (calDrawer && !calDrawer.classList.contains('hidden')) { closeCalendarDrawer(); return; }
     }
     if (e.key === '/' && !inField) {
       const s = document.getElementById('search');
@@ -134,10 +137,22 @@ async function renderAll() {
 // ----------------------------------------------------------------------------
 function wireHeader() {
   document.getElementById('btn-add').addEventListener('click', () => openAddModal());
+  document.getElementById('btn-calendar')?.addEventListener('click', () => openCalendarDrawer());
   // Gear icon removed — Settings is now a bottom tab. See wireSettingsPane().
   document.getElementById('btn-advanced')?.addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
   });
+
+  // Calendar drawer close — overlay + × button both carry data-close-calendar.
+  const calDrawer = document.getElementById('calendar-drawer');
+  if (calDrawer) {
+    calDrawer.addEventListener('click', (e) => {
+      if (!(e.target instanceof Element)) return;
+      if (e.target.matches('[data-close-calendar]') || e.target.closest('[data-close-calendar]')) {
+        closeCalendarDrawer();
+      }
+    });
+  }
   document.getElementById('btn-add-empty')?.addEventListener('click', () => openAddModal());
   document.getElementById('btn-seed')?.addEventListener('click', async () => {
     if (!confirm('Load sample subscriptions? This will overwrite your current tracked subs.')) return;
@@ -611,6 +626,76 @@ function renderCalendar() {
     const el = document.createElement('div');
     el.className = 'cal-other';
     grid.appendChild(el);
+  }
+}
+
+// ----------------------------------------------------------------------------
+// calendar drawer (header button) — opens an overlay with the renewal month
+// grid + a "next 30 days" upcoming list. Reuses renderCalendar above.
+// ----------------------------------------------------------------------------
+function openCalendarDrawer() {
+  const drawer = document.getElementById('calendar-drawer');
+  if (!drawer) return;
+  state.calCursor = new Date(); // snap to current month every open
+  renderCalendar();
+  renderCalendarUpcoming();
+  drawer.classList.remove('hidden');
+  drawer.setAttribute('aria-hidden', 'false');
+}
+
+function closeCalendarDrawer() {
+  const drawer = document.getElementById('calendar-drawer');
+  if (!drawer) return;
+  drawer.classList.add('hidden');
+  drawer.setAttribute('aria-hidden', 'true');
+}
+
+// "Next 30 days" list inside the calendar drawer. Sorted ascending by
+// renewal timestamp; click a row to open that sub's detail drawer.
+function renderCalendarUpcoming() {
+  const list = document.getElementById('cal-upcoming-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  const horizon = Date.now() + 30 * 86400_000;
+  const upcoming = state.subs
+    .filter(s => s.status === 'active')
+    .map(s => {
+      const ts = s.isTrial && s.trialEndsAt ? s.trialEndsAt : s.nextRenewal;
+      return { sub: s, ts };
+    })
+    .filter(x => x.ts && x.ts <= horizon)
+    .sort((a, b) => a.ts - b.ts);
+
+  if (upcoming.length === 0) {
+    list.innerHTML = `<li class="cal-upcoming-empty">No renewals in the next 30 days.</li>`;
+    return;
+  }
+
+  for (const { sub, ts } of upcoming) {
+    const li = document.createElement('li');
+    li.className = 'cal-upcoming-row';
+    li.setAttribute('tabindex', '0');
+    li.setAttribute('role', 'button');
+    const u = urgencyOf(ts);
+    const whenClass = u === 'safe' ? '' : `when-${u}`;
+    li.innerHTML = `
+      ${brandSquareHtml(sub, 24)}
+      <div class="cal-upcoming-main">
+        <div class="cal-upcoming-name" dir="auto">${esc(sub.name)}${sub.isTrial ? ' <span class="sub-pill pill-trial">trial</span>' : ''}</div>
+        <div class="cal-upcoming-meta">${esc(fmtDate(ts))}</div>
+      </div>
+      <div class="cal-upcoming-right">
+        <div class="cal-upcoming-amount">${fmtMoney(sub.amount || 0, sub.currency)}</div>
+        <div class="cal-upcoming-when ${whenClass}">${esc(fmtRelative(ts))}</div>
+      </div>
+    `;
+    const open = () => { closeCalendarDrawer(); openDrawer(sub.id); };
+    li.addEventListener('click', open);
+    li.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
+    list.appendChild(li);
   }
 }
 

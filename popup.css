@@ -744,6 +744,80 @@ input:focus, select:focus,
 }
 .leg { display: flex; align-items: center; gap: 4px; }
 
+/* Calendar drawer — "next 30 days" upcoming list below the grid. */
+.cal-upcoming {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.cal-upcoming-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cal-upcoming-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 6px;
+  border-radius: var(--radius-input);
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+.cal-upcoming-row:hover,
+.cal-upcoming-row:focus-visible {
+  background: var(--surface-2);
+  outline: none;
+}
+.cal-upcoming-main { min-width: 0; }
+.cal-upcoming-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cal-upcoming-meta {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+.cal-upcoming-right { text-align: right; }
+.cal-upcoming-amount {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.cal-upcoming-when {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  margin-top: 1px;
+}
+.cal-upcoming-when.when-soon    { color: var(--warning); }
+.cal-upcoming-when.when-urgent  { color: var(--danger); }
+.cal-upcoming-when.when-overdue { color: var(--danger); font-weight: 600; }
+.cal-upcoming-empty {
+  list-style: none;
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 8px 6px;
+}
+
 /* ---------- insights ---------- */
 .insights-row + .insights-row { margin-top: 8px; }
 .card-pad {
