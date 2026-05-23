@@ -1,0 +1,15 @@
+title: Catchly
+description: Privacy-first subscription tracker. Local-only — no bank login, no data sold.
+url: https://muzeeb1998.github.io
+baseurl: /Catchly
+theme: jekyll-theme-minimal
+markdown: kramdown
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+exclude:
+  - README.md
+  - CHANGELOG.md
+  - PUBLISHING.md
