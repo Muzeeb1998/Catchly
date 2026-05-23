@@ -1,7 +1,11 @@
 title: Catchly
 description: Privacy-first subscription tracker. Local-only — no bank login, no data sold.
-url: https://muzeeb1998.github.io
-baseurl: /Catchly
+# Custom domain getcatchly.com is the canonical Pages URL. Apex serves at root,
+# so baseurl is empty. If you ever switch back to the github.io subdomain, set:
+#   url: https://muzeeb1998.github.io
+#   baseurl: /Catchly
+url: https://getcatchly.com
+baseurl: ""
 theme: jekyll-theme-minimal
 markdown: kramdown
 plugins:
