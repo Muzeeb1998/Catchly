@@ -2,7 +2,7 @@
 
 import {
   getSettings, setSettings,
-  exportAll, wipeAll, seedSampleData
+  exportAll, importAll, wipeAll, seedSampleData
 } from './lib/storage.js';
 
 import {
@@ -245,12 +245,46 @@ function wireDataButtons() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `sentry-export-${new Date().toISOString().slice(0,10)}.json`;
+    a.download = `catchly-export-${new Date().toISOString().slice(0,10)}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
   });
+
+  // Import flow: visible button triggers hidden <input type=file>; file change
+  // event reads + parses + confirms + writes via importAll. Existing data is
+  // overwritten for any storage key present in the payload (importAll spec).
+  const importBtn = document.getElementById('btn-import');
+  const importFile = document.getElementById('import-file');
+  if (importBtn && importFile) {
+    importBtn.addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        const summary = [];
+        if (Array.isArray(data.subs)) summary.push(`${data.subs.length} subs`);
+        if (Array.isArray(data.events)) summary.push(`${data.events.length} events`);
+        if (data.waitlistState?.email) summary.push('waitlist email');
+        if (Array.isArray(data.pendingCaptures)) summary.push(`${data.pendingCaptures.length} pending captures`);
+        const detail = summary.length ? ` (${summary.join(', ')})` : '';
+        if (!confirm(`Import this file${detail}? This will OVERWRITE matching keys in current storage.`)) {
+          importFile.value = '';
+          return;
+        }
+        const result = await importAll(data);
+        await chrome.runtime.sendMessage({ type: 'reschedule_all' });
+        alert(`Imported. Wrote ${result.imported.length} storage keys: ${result.imported.join(', ')}.`);
+      } catch (err) {
+        alert(`Import failed: ${err.message || err}`);
+      } finally {
+        importFile.value = ''; // reset so re-picking the same file fires change again
+      }
+    });
+  }
 
   document.getElementById('btn-seed').addEventListener('click', async () => {
     if (!confirm('Load sample subscriptions? This will overwrite your current tracked subs.')) return;
