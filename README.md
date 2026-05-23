@@ -28,7 +28,7 @@ All 12 features from the v1 starter kit are functional code, not stubs:
 | 3 | **Smart reminders** | Notifications fire 7/3/1 days before renewal (configurable in Settings). |
 | 4 | **Spending dashboard** | Popup shows monthly / yearly / active-count summary. |
 | 5 | **Local-only storage** | All data in `chrome.storage.local`. No network calls. Verify in DevTools. |
-| 6 | **Merchant normalization** | 21 services with aliases — "GOOGLE *YOUTUBE PREMIUM" maps cleanly. |
+| 6 | **Merchant normalization** | 20 services with aliases — "GOOGLE *YOUTUBE PREMIUM" maps cleanly. |
 | 7 | **Price-hike alerts** | Sample data includes a Netflix hike ($22.99 → $24.99). See the alert strip + drawer warning. |
 | 8 | **Shadow-charge detector** | Sample data includes Audible last-visited 87 days ago + renewing in 11d. Open Audible's detail drawer. |
 | 9 | **Guided cancel** | Detail drawer → "Open cancel page" deep-links straight to the cancel URL + shows step-by-step. |
