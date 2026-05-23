@@ -1531,6 +1531,17 @@ input:focus, select:focus,
   gap: 6px;
 }
 
+/* Theme-switch transition kill — applied for one frame around the
+   data-theme attribute swap so every component with `transition: color`
+   / `transition: background` doesn't crossfade across all themed
+   properties simultaneously (visible 120ms blur otherwise). popup.js
+   wireSettingsPane toggles .is-theme-switching on the <html> element
+   immediately around setThemeAttr, removes it on next animation frame. */
+html.is-theme-switching,
+html.is-theme-switching * {
+  transition: none !important;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

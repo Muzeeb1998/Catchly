@@ -24,7 +24,7 @@
 import {
   getAllSubs, saveSub, deleteSub, getSettings, setSettings,
   getPendingCaptures, dismissCapture, findPotentialDuplicate,
-  getEvents, seedSampleData, getDaysSinceLastVisit, logEvent,
+  getEvents, seedSampleData, getUsage, logEvent,
   checkAndRecordPriceChange,
   getUiState, setUiState
 } from './lib/storage.js';
@@ -169,8 +169,31 @@ function renderSummary() {
   const active = state.subs.filter(s => s.status === 'active');
   const month = active.reduce((sum, s) => sum + toMonthly(s.amount || 0, s.cycle || 'monthly'), 0);
   const year = active.reduce((sum, s) => sum + toYearly(s.amount || 0, s.cycle || 'monthly'), 0);
-  document.getElementById('stat-month').textContent = fmtMoney(month, state.settings.currency);
-  document.getElementById('stat-year').textContent = fmtMoney(year, state.settings.currency);
+  // P2 #TC-EDGE-010: subs can have heterogeneous currencies but renderSummary
+  // sums raw amounts ignoring conversion. If we naively render via
+  // fmtMoney(sum, state.settings.currency) the prefix lies (e.g. "$" on a
+  // total that includes EUR amounts). Detect distinct currencies and surface
+  // "Mixed" instead of a misleading single-currency total. Title attribute
+  // lists the actual currencies for transparency.
+  const currencies = new Set();
+  for (const s of active) {
+    currencies.add((s.currency || state.settings.currency || 'USD').toUpperCase());
+  }
+  const mixed = currencies.size > 1;
+  const monthEl = document.getElementById('stat-month');
+  const yearEl = document.getElementById('stat-year');
+  if (mixed) {
+    const list = Array.from(currencies).sort().join(', ');
+    monthEl.textContent = 'Mixed';
+    yearEl.textContent = 'Mixed';
+    monthEl.title = `Subs span multiple currencies (${list}); totals omitted to avoid a misleading single-currency sum.`;
+    yearEl.title = monthEl.title;
+  } else {
+    monthEl.textContent = fmtMoney(month, state.settings.currency);
+    yearEl.textContent = fmtMoney(year, state.settings.currency);
+    monthEl.removeAttribute('title');
+    yearEl.removeAttribute('title');
+  }
   document.getElementById('stat-count').textContent = String(active.length);
 }
 
@@ -235,6 +258,13 @@ async function renderAlerts() {
   const items = [];
 
   const s = state.settings || {};
+  // Hoist usage map outside the loop (P2 #TC-PERF-005). Previously
+  // renderAlerts called getDaysSinceLastVisit(sub.serviceKey) inside the
+  // for-sub loop, doing N chrome.storage.local reads of the same usage_v1
+  // key. Fetch once, compute days locally.
+  const usage = await getUsage();
+  const dayMs = 86400_000;
+
   for (const sub of state.subs) {
     if (sub.status !== 'active') continue;
 
@@ -273,7 +303,8 @@ async function renderAlerts() {
     // Shadow charge: renewal soon + not visited in a while
     if (s.notifyShadow !== false && sub.serviceKey) {
       const dRenew = daysUntil(sub.nextRenewal);
-      const lastVisit = await getDaysSinceLastVisit(sub.serviceKey);
+      const lastVisitTs = usage[sub.serviceKey];
+      const lastVisit = lastVisitTs ? Math.floor((Date.now() - lastVisitTs) / dayMs) : null;
       if (
         dRenew !== null && dRenew >= 0 && dRenew <= 7 &&
         lastVisit !== null && lastVisit >= (state.settings.shadowDaysThreshold || 60)
@@ -310,7 +341,7 @@ async function renderAlerts() {
       ${brandHtml}
       ${iconSvg ? `<div class="alert-icon">${iconSvg}</div>` : ''}
       <div class="alert-body">
-        <div class="alert-title">${esc(a.title)}</div>
+        <div class="alert-title" dir="auto">${esc(a.title)}</div>
         <div class="alert-sub">${esc(a.sub)}</div>
       </div>
       <button class="alert-act">${esc(a.action)}</button>
@@ -453,7 +484,7 @@ function buildSubItem(sub, inactive) {
     li.innerHTML = `
       ${brand}
       <div class="sub-main">
-        <div class="sub-name">${esc(sub.name)}</div>
+        <div class="sub-name" dir="auto">${esc(sub.name)}</div>
         <div class="sub-meta">${esc(cancelledLabel)}</div>
       </div>
       <div class="sub-right">
@@ -469,11 +500,11 @@ function buildSubItem(sub, inactive) {
       ${brand}
       <div class="sub-main">
         <div class="sub-name">
-          ${esc(sub.name)}
+          <span dir="auto">${esc(sub.name)}</span>
           ${sub.isTrial ? '<span class="sub-pill pill-trial">trial</span>' : ''}
           ${hike ? '<span class="sub-pill pill-hike">price ↑</span>' : ''}
         </div>
-        <div class="sub-meta">${esc(sub.plan || sub.category || sub.cycle || '')}</div>
+        <div class="sub-meta" dir="auto">${esc(sub.plan || sub.category || sub.cycle || '')}</div>
       </div>
       <div class="sub-right">
         <div class="sub-amount">${fmtMoney(sub.amount || 0, sub.currency)}</div>
@@ -693,7 +724,7 @@ function openDrawer(subId) {
     <div class="detail-hero">
       ${brandSquareHtml(sub, 48)}
       <div style="flex:1;min-width:0;">
-        <div class="detail-title">${esc(sub.name)}</div>
+        <div class="detail-title" dir="auto">${esc(sub.name)}</div>
         <div class="detail-sub">${esc([sub.plan, sub.category].filter(Boolean).join(' · '))}</div>
       </div>
     </div>
@@ -778,7 +809,7 @@ async function renderPendingCaptures() {
       ${brandSquareHtml({ serviceKey: p.serviceKey, color: p.color, name: p.name }, 32)}
       <div class="capture-body">
         <div class="capture-eyebrow">${dup ? 'looks like a duplicate' : 'detected — add?'}</div>
-        <div class="capture-name">${esc(p.name)}</div>
+        <div class="capture-name" dir="auto">${esc(p.name)}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px;">
           ${p.amount ? fmtMoney(p.amount, 'USD') + ' / ' + esc(p.cycle || 'monthly') : 'price not detected'}${p.isTrial ? ' · trial' : ''}
         </div>
@@ -1085,7 +1116,16 @@ function wireSettingsPane() {
   if (themeSelect) {
     themeSelect.addEventListener('change', async (e) => {
       const t = e.target.value;
+      // P2 #TC-THEME-010: pin transitions off for one frame so the data-theme
+      // swap doesn't crossfade every transitioned property at 120ms (visible
+      // smear otherwise). Pair-up requestAnimationFrame lets the browser
+      // paint with .is-theme-switching set, then drops it on the next frame.
+      const root = document.documentElement;
+      root.classList.add('is-theme-switching');
       setThemeAttr(t);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        root.classList.remove('is-theme-switching');
+      }));
       try { localStorage.setItem('catchly_theme_cache', t); } catch {}
       await setSettings({ theme: t });
       state.settings = await getSettings();
