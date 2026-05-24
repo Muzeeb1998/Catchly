@@ -100,7 +100,48 @@ body {
   font-size: 16px;
   line-height: 1.6;
   overflow-x: hidden;
-  transition: background-color .3s ease, color .3s ease;
+}
+
+/* ============================================================
+   Theme transition — smooth crossfade between light/dark.
+   Uses View Transitions API where supported; falls back to a
+   class-scoped transition window so we don't pay the cost of a
+   global transition on every interaction (hover etc).
+   ============================================================ */
+html.is-theme-transitioning,
+html.is-theme-transitioning *,
+html.is-theme-transitioning *::before,
+html.is-theme-transitioning *::after {
+  transition:
+    background-color .32s ease,
+    color .32s ease,
+    border-color .32s ease,
+    fill .32s ease,
+    stroke .32s ease,
+    box-shadow .32s ease,
+    opacity .32s ease !important;
+}
+
+/* View Transitions API — native, GPU-accelerated crossfade. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: .32s;
+  animation-timing-function: ease;
+}
+::view-transition-old(root) { animation-name: catchly-theme-fade-out; }
+::view-transition-new(root) { animation-name: catchly-theme-fade-in; }
+@keyframes catchly-theme-fade-out { to { opacity: 0; } }
+@keyframes catchly-theme-fade-in  { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  html.is-theme-transitioning,
+  html.is-theme-transitioning *,
+  html.is-theme-transitioning *::before,
+  html.is-theme-transitioning *::after {
+    transition: none !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation-duration: 0s; }
 }
 
 ::selection { background: var(--accent); color: var(--accent-ink); }
@@ -2764,12 +2805,36 @@ document.documentElement.classList.add('js');
     toggle.setAttribute('aria-label', cur === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
   }
   updateAria();
-  toggle.addEventListener('click', function() {
-    var cur = document.documentElement.dataset.theme || 'light';
-    var next = cur === 'light' ? 'dark' : 'light';
+  function applyTheme(next) {
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem('catchly_theme', next); } catch (e) {}
     updateAria();
+  }
+  toggle.addEventListener('click', function() {
+    var cur = document.documentElement.dataset.theme || 'light';
+    var next = cur === 'light' ? 'dark' : 'light';
+
+    // Path 1 — View Transitions API (Chromium, Safari 18+).
+    // Native, GPU-accelerated crossfade of the whole document.
+    if (typeof document.startViewTransition === 'function') {
+      document.startViewTransition(function() { applyTheme(next); });
+      return;
+    }
+
+    // Path 2 — class-scoped CSS transition fallback. We only
+    // pay the global-transition cost during the swap window,
+    // so hover/focus transitions on the rest of the page are
+    // untouched.
+    var root = document.documentElement;
+    root.classList.add('is-theme-transitioning');
+    applyTheme(next);
+    // Force a reflow so the new vars commit before the class
+    // is removed; without this Firefox occasionally skips the
+    // crossfade.
+    void root.offsetWidth;
+    window.setTimeout(function() {
+      root.classList.remove('is-theme-transitioning');
+    }, 360);
   });
 
   // ===== Reveal on scroll =====
