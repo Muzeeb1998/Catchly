@@ -1,0 +1,3026 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Catchly — Catch the subscriptions you've forgotten</title>
+<meta name="description" content="Catchly is a privacy-first Chrome extension that catches forgotten subscriptions, flags price hikes, and warns you about renewals on services you've stopped using. No bank login. No account. Local-only." />
+<link rel="canonical" href="https://getcatchly.com" />
+<meta property="og:title" content="Catchly — Catch the subscriptions you've forgotten" />
+<meta property="og:description" content="A Chrome extension that quietly tracks every recurring charge — without ever asking for your bank login." />
+<meta property="og:image" content="https://getcatchly.com/og.png" />
+<meta property="og:url" content="https://getcatchly.com" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2315110C'/><path d='M9 9v14M13 9h-4M13 23h-4M23 9v14M19 9h4M19 23h4' stroke='%23FAF7F2' stroke-width='2' stroke-linecap='round'/><circle cx='16' cy='16' r='3' fill='%23F5D547'/></svg>" />
+
+<script>
+(function() {
+  try {
+    var stored = localStorage.getItem('catchly_theme');
+    if (stored) {
+      document.documentElement.dataset.theme = stored;
+    } else {
+      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = systemDark ? 'dark' : 'light';
+    }
+  } catch (e) {}
+})();
+</script>
+
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap" />
+
+<style>
+/* ============================================================
+   Catchly — single-file landing page
+   ============================================================ */
+
+:root[data-theme="light"] {
+  --canvas: #FAF7F2;
+  --canvas-2: #FFFFFF;
+  --canvas-3: #F2EDE3;
+  --ink: #15110C;
+  --ink-2: #3A332A;
+  --muted: #6E6557;
+  --rule: #E5DFD3;
+  --rule-strong: #C9C0AE;
+  --accent: #F5D547;
+  --accent-hover: #E6C320;
+  --accent-ink: #15110C;
+  --accent-glow: rgba(245, 213, 71, 0.18);
+  --accent-soft: #FFFCE0;
+  --danger: #B42318;
+  --leaf: #00875A;
+  --shadow-card: 0 1px 0 rgba(21,17,12,0.04), 0 24px 60px -20px rgba(21,17,12,0.18), 0 8px 24px -12px rgba(21,17,12,0.10);
+  --shadow-pop: 0 1px 0 rgba(21,17,12,0.04), 0 40px 80px -24px rgba(21,17,12,0.22), 0 12px 32px -16px rgba(21,17,12,0.12);
+}
+
+:root[data-theme="dark"] {
+  --canvas: #0F0D0A;
+  --canvas-2: #1A1612;
+  --canvas-3: #252019;
+  --ink: #FAF7F2;
+  --ink-2: #C9C0AE;
+  --muted: #8A8275;
+  --rule: #2E2820;
+  --rule-strong: #3F3829;
+  --accent: #F5D547;
+  --accent-hover: #FFDC1E;
+  --accent-ink: #0F0D0A;
+  --accent-glow: rgba(245, 213, 71, 0.10);
+  --accent-soft: #2A2515;
+  --danger: #FF6B6B;
+  --leaf: #6BCB77;
+  --shadow-card: 0 1px 0 rgba(0,0,0,0.4), 0 24px 60px -20px rgba(0,0,0,0.6), 0 8px 24px -12px rgba(0,0,0,0.4);
+  --shadow-pop: 0 1px 0 rgba(0,0,0,0.4), 0 40px 80px -24px rgba(0,0,0,0.7), 0 12px 32px -16px rgba(0,0,0,0.5);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+html, body { margin: 0; padding: 0; }
+
+html {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: 'General Sans', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'ss01', 'ss02';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  transition: background-color .3s ease, color .3s ease;
+}
+
+::selection { background: var(--accent); color: var(--accent-ink); }
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input { font-family: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ============================================================
+   Typography
+   ============================================================ */
+.eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+}
+
+h1.hero-h {
+  font-size: clamp(40px, 5.2vw, 68px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.06;
+  color: var(--ink);
+  margin: 0 0 24px;
+  text-wrap: balance;
+}
+.hero-swap {
+  display: inline-block;
+  color: var(--ink);
+  min-width: var(--swap-w, auto);
+  transition: opacity .22s ease, transform .22s ease;
+  will-change: opacity, transform;
+}
+.hero-swap.leaving {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.hero-swap.entering {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: none;
+}
+h2.section-h {
+  font-size: clamp(36px, 4.5vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.08;
+  color: var(--ink);
+  margin: 0 0 20px;
+  text-wrap: balance;
+}
+.subhead {
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0;
+  max-width: 640px;
+}
+.body-copy {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 0 0 16px;
+}
+.caption {
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   Buttons + inline CTA
+   ============================================================ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: transform .18s ease, background-color .2s ease, box-shadow .2s ease;
+  box-shadow: 0 1px 0 rgba(21,17,12,0.06), 0 6px 16px -8px var(--accent-glow);
+}
+.nav .btn-primary {
+  padding: 9px 16px;
+  font-size: 14px;
+  border-radius: 9px;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+.btn-primary.large { padding: 16px 26px; font-size: 16px; border-radius: 12px; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  border-bottom: 1px solid transparent;
+  white-space: nowrap;
+  transition: border-color .2s ease, color .2s ease;
+}
+.btn-ghost .arrow {
+  display: inline-block;
+  color: var(--accent);
+  font-weight: 700;
+  transition: transform .2s ease;
+}
+.btn-ghost:hover .arrow { transform: translateX(3px); }
+.btn-ghost:hover { color: var(--ink); border-bottom-color: var(--accent); }
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color .25s ease, border-color .25s ease, backdrop-filter .25s ease;
+}
+.nav.scrolled {
+  background: color-mix(in oklab, var(--canvas) 78%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom-color: var(--rule);
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.brand-mark {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+  background: var(--ink);
+}
+.brand-mark img { width: 100%; height: 100%; display: block; }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 8px;
+}
+.nav-links a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color .15s ease, color .15s ease;
+}
+.nav-links a:hover { background: var(--canvas-3); color: var(--ink); }
+
+.theme-toggle {
+  width: 38px;
+  height: 38px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-2);
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+  margin: 0 6px;
+}
+.theme-toggle:hover { background: var(--canvas-3); color: var(--ink); border-color: var(--rule-strong); }
+.theme-toggle .icon-sun, .theme-toggle .icon-moon { transition: opacity .2s ease, transform .2s ease; }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.hero {
+  position: relative;
+  padding: 80px 0 56px;
+  text-align: center;
+}
+.hero-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-beta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: var(--canvas-2);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 28px;
+  white-space: nowrap;
+}
+.hero-beta .pulse {
+  position: relative;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.hero-beta .pulse::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: .4;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(0.6); opacity: .5; }
+  50% { transform: scale(1.4); opacity: 0; }
+}
+.hero .subhead { margin-top: 8px; max-width: 620px; text-wrap: balance; }
+.hero-cta-row {
+  margin-top: 32px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.trust-line {
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+  max-width: 460px;
+  text-align: center;
+}
+
+/* Hero product visual area */
+.hero-visual-wrap {
+  position: relative;
+  margin: 64px auto 0;
+  max-width: 940px;
+  width: 100%;
+}
+.hero-visual-wrap .popup-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Variant switching (driven by data-visual on .hero-visual-wrap) */
+.hero-visual-wrap[data-visual="webstore"] .popup-float,
+.hero-visual-wrap[data-visual="webstore"] .toast-bob { display: none; }
+.hero-visual-wrap[data-visual="popup"] .webstore-shell { display: none; }
+.hero-visual-wrap[data-visual="popup"] {
+  max-width: 720px;
+}
+
+/* ============================================================
+   Browser wireframe — chrome web store install moment
+   ============================================================ */
+.webstore-shell {
+  width: 100%;
+  background: #0E0B08;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 60px 120px -40px rgba(0,0,0,0.45),
+    0 30px 60px -30px rgba(0,0,0,0.35);
+  color: rgba(255,255,255,0.86);
+  font-family: 'General Sans', sans-serif;
+  position: relative;
+  text-align: left;
+}
+.ws-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 10px 12px 0;
+  background: #07050300;
+  background-image: linear-gradient(180deg, #050403 0%, #0B0907 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.ws-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px 9px 14px;
+  border-radius: 10px 10px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.45);
+  background: transparent;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ws-tab.active {
+  background: #0E0B08;
+  color: rgba(255,255,255,0.85);
+}
+.ws-favicon {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  background: var(--accent);
+  display: inline-grid; place-items: center;
+  flex-shrink: 0;
+}
+.ws-favicon::after {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #0E0B08;
+}
+.ws-newtab {
+  margin-left: 4px;
+  width: 26px; height: 26px;
+  display: inline-grid; place-items: center;
+  color: rgba(255,255,255,0.35);
+  font-size: 16px;
+  align-self: center;
+  margin-bottom: 4px;
+}
+
+.ws-urlbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #0E0B08;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.ws-nav-btns {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255,255,255,0.3);
+}
+.ws-nav-btns span {
+  width: 24px; height: 24px;
+  display: inline-grid; place-items: center;
+  border-radius: 6px;
+}
+.ws-url {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #15110C;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.62);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.01em;
+}
+.ws-url svg { flex-shrink: 0; opacity: .55; }
+.ws-url .ws-url-domain { color: rgba(255,255,255,0.92); }
+.ws-url-star {
+  color: rgba(255,255,255,0.3);
+  margin-left: auto;
+}
+
+.ws-page {
+  padding: 48px 56px 44px;
+  background:
+    radial-gradient(80% 60% at 50% 0%, rgba(245,213,71,0.04) 0%, transparent 70%),
+    #0E0B08;
+  position: relative;
+}
+.ws-breadcrumb {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.4);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  margin-bottom: 26px;
+}
+.ws-breadcrumb b { color: rgba(255,255,255,0.7); font-weight: 600; }
+
+.ws-card {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  gap: 26px;
+  align-items: center;
+  margin-bottom: 36px;
+}
+.ws-icon {
+  width: 110px; height: 110px;
+  border-radius: 22px;
+  overflow: hidden;
+  display: inline-block;
+  position: relative;
+  background: #15110C;
+}
+.ws-icon img { width: 100%; height: 100%; display: block; }
+.ws-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+.ws-icon svg { display: block; }
+
+.hero { position: relative; isolation: isolate; }
+
+/* Hero motion backdrop — lazy-mounted by Tweaks panel "Motion" */
+.hero-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+}
+:root[data-theme="dark"] .hero-backdrop {
+  mix-blend-mode: screen;
+  opacity: 0.72;
+}
+.hero-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 50% at 50% 40%, transparent 0%, var(--canvas) 85%),
+    linear-gradient(180deg, transparent 0%, transparent 65%, var(--canvas) 100%);
+  pointer-events: none;
+}
+.hero-backdrop > [data-us-project] {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+.hero-backdrop canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+@media (max-width: 640px), (prefers-reduced-motion: reduce) {
+  .hero-backdrop { display: none !important; }
+}
+.ws-meta { min-width: 0; }
+.ws-name {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 0 0 4px;
+}
+.ws-tag {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.55);
+  margin: 0 0 14px;
+  max-width: 36ch;
+  line-height: 1.4;
+}
+.ws-bylinerow {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.5);
+}
+.ws-stars { color: var(--accent); letter-spacing: 1px; font-size: 11px; }
+.ws-byline-sep { opacity: .4; }
+.ws-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255,255,255,0.7);
+}
+.ws-verified::before {
+  content: '';
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5l3 3 6-6' stroke='%2315110C' stroke-width='2.4' fill='none' stroke-linecap='round'/></svg>");
+  background-size: 10px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.ws-action {
+  position: relative;
+  align-self: center;
+}
+.ws-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.005em;
+  padding: 14px 26px;
+  border-radius: 11px;
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 0 rgba(245,213,71,0.45),
+    0 20px 50px -20px rgba(245,213,71,0.55);
+  animation: ws-pulse 2.6s ease-in-out infinite;
+}
+@keyframes ws-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,213,71,0.4), 0 20px 50px -20px rgba(245,213,71,0.55); }
+  50%      { box-shadow: 0 0 0 12px rgba(245,213,71,0), 0 20px 50px -20px rgba(245,213,71,0.7); }
+}
+.ws-cursor {
+  position: absolute;
+  right: -28px; bottom: -22px;
+  width: 22px; height: 26px;
+  color: #fff;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+  animation: ws-cursor-bob 3.2s ease-in-out infinite;
+}
+@keyframes ws-cursor-bob {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-4px, -4px); }
+}
+
+.ws-strip {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1fr;
+  gap: 12px;
+}
+.ws-screen {
+  height: 90px;
+  background: #15110C;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.ws-screen-rows {
+  position: absolute;
+  inset: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ws-screen-rows i {
+  display: block;
+  height: 6px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 3px;
+}
+.ws-screen-rows i:nth-child(1) { width: 60%; }
+.ws-screen-rows i:nth-child(2) { width: 80%; }
+.ws-screen-rows i:nth-child(3) { width: 45%; }
+.ws-screen-rows i:nth-child(4) { width: 70%; }
+.ws-screen.accent {
+  background:
+    linear-gradient(135deg, rgba(245,213,71,0.10) 0%, transparent 70%),
+    #15110C;
+  border-color: rgba(245,213,71,0.12);
+}
+.ws-screen.accent::after {
+  content: '';
+  position: absolute;
+  top: 14px; left: 14px;
+  width: 26px; height: 6px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.hero-visual-wrap .toast-bob {
+  position: absolute;
+  right: -36px;
+  bottom: 22%;
+  width: 280px;
+  transform: rotate(3deg);
+  animation: bob 5s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes bob {
+  0%, 100% { transform: rotate(3deg) translateY(0); }
+  50% { transform: rotate(3deg) translateY(-3px); }
+}
+
+/* ============================================================
+   Popup mockup
+   ============================================================ */
+.popup {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+  text-align: left;
+}
+.popup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--canvas-2);
+}
+.popup-head .title {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 14px; color: var(--ink);
+}
+.popup-head .mini-mark {
+  width: 22px; height: 22px; border-radius: 5px;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+  background: var(--ink);
+}
+.popup-head .mini-mark img { width: 100%; height: 100%; display: block; }
+.popup-head .icons {
+  display: inline-flex; gap: 4px; color: var(--muted);
+}
+.popup-head .icons span {
+  width: 26px; height: 26px; display: inline-grid; place-items: center;
+  border-radius: 6px;
+}
+
+.popup-summary {
+  padding: 18px;
+  background: var(--canvas-3);
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.popup-summary .stat {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.popup-summary .stat .label {
+  font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.popup-summary .stat .value {
+  font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 18px;
+  color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+}
+.popup-summary .stat:nth-child(2) .value,
+.popup-summary .stat:nth-child(3) .value { font-size: 16px; }
+
+.popup-list { padding: 6px 0; }
+.sub-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--rule);
+  transition: background-color .15s ease;
+}
+.sub-row:last-child { border-bottom: none; }
+.sub-row:hover { background: var(--canvas-3); }
+.sub-icon {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: inline-grid; place-items: center;
+  color: #fff; font-weight: 700; font-size: 15px;
+  flex-shrink: 0;
+}
+.sub-meta { flex: 1; min-width: 0; }
+.sub-name {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 14px; color: var(--ink);
+}
+.sub-when { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.sub-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.pill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+.pill-warn { background: var(--accent); color: var(--accent-ink); }
+.pill-danger { background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger); }
+
+.popup-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--rule);
+  background: var(--canvas-2);
+}
+.popup-tab {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 12px 6px 14px;
+  font-size: 11px; font-weight: 500; color: var(--muted);
+  border-top: 2px solid transparent;
+}
+.popup-tab.active { color: var(--ink); border-top-color: var(--accent); }
+.popup-tab svg { display: block; }
+
+/* Capture toast */
+.toast {
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  padding: 14px 14px 12px;
+  min-width: 290px;
+}
+.toast-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.toast-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted);
+}
+.toast-label .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+.toast-close {
+  width: 18px; height: 18px; border-radius: 4px; display: inline-grid; place-items: center;
+  color: var(--muted); font-size: 14px;
+}
+.toast-title {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 600; font-size: 14px; color: var(--ink); margin: 4px 0;
+}
+.toast-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; color: var(--ink-2);
+  margin-bottom: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toast-actions { display: flex; gap: 8px; }
+.toast-btn {
+  flex: 1; padding: 8px 10px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; text-align: center;
+}
+.toast-btn.primary { background: var(--accent); color: var(--accent-ink); }
+.toast-btn.ghost { background: var(--canvas-3); color: var(--ink-2); }
+
+/* Service-color tokens */
+.svc-netflix { background: #E50914; }
+.svc-adobe { background: #DA1F26; }
+.svc-chatgpt { background: #10A37F; }
+.svc-audible { background: #F08804; }
+.svc-spotify { background: #1DB954; }
+
+/* ============================================================
+   Credibility strip — auto-scrolling marquee with brand logos
+   ============================================================ */
+.credibility {
+  background: var(--canvas-3);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 52px 0 56px;
+  text-align: center;
+  overflow: hidden;
+}
+.credibility .eyebrow {
+  justify-content: center;
+  display: inline-flex;
+  margin: 0 0 28px;
+  color: var(--muted);
+}
+
+.cred-marquee {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  --fade: 80px;
+  mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
+}
+.cred-track {
+  display: flex;
+  width: max-content;
+  animation: cred-scroll 56s linear infinite;
+}
+.cred-marquee:hover .cred-track { animation-play-state: paused; }
+.cred-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 40px;
+  padding-right: 40px;
+  flex-shrink: 0;
+}
+.cred-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+  opacity: .68;
+  letter-spacing: -0.005em;
+  transition: opacity .2s ease, color .2s ease, transform .2s ease;
+  cursor: default;
+}
+.cred-chip:hover {
+  opacity: 1;
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+.cred-glyph {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.cred-glyph svg { display: block; width: 100%; height: 100%; }
+
+@keyframes cred-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cred-track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    gap: 28px 32px;
+  }
+  .cred-marquee { mask-image: none; -webkit-mask-image: none; }
+  .cred-row { padding-right: 0; gap: 28px 32px; flex-wrap: wrap; justify-content: center; }
+  .cred-row + .cred-row { display: none; } /* hide the duplicate when not animating */
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ============================================================
+   Feature sections (alternating)
+   ============================================================ */
+.feature {
+  padding: 120px 0;
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.feature.reverse .feature-grid > .feature-visual { order: 2; }
+.feature.reverse .feature-grid > .feature-text { order: 1; }
+.feature-text { max-width: 520px; }
+.feature-text .body-copy { font-size: 17px; color: var(--ink-2); line-height: 1.6; }
+.feature-text .btn-ghost { margin-top: 12px; }
+
+/* Detection visual — fake browser */
+.fakebrowser {
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  position: relative;
+}
+.fb-head {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px;
+  background: var(--canvas-3);
+  border-bottom: 1px solid var(--rule);
+}
+.fb-dots { display: inline-flex; gap: 6px; }
+.fb-dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--rule-strong); display: inline-block; }
+.fb-url {
+  flex: 1;
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 12px; color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.fb-body {
+  position: relative;
+  height: 360px;
+  padding: 28px;
+  background: var(--canvas-2);
+  overflow: hidden;
+}
+.fb-fake {
+  opacity: .45;
+}
+.fb-fake .fake-logo {
+  width: 80px; height: 22px; background: #E50914; border-radius: 4px;
+  margin-bottom: 24px;
+}
+.fb-fake .fake-row { height: 11px; border-radius: 5px; background: var(--rule); margin-bottom: 10px; }
+.fb-fake .fake-row.w70 { width: 70%; }
+.fb-fake .fake-row.w55 { width: 55%; }
+.fb-fake .fake-row.w80 { width: 80%; }
+.fb-fake .fake-row.w40 { width: 40%; }
+.fb-fake .fake-card-row { display: flex; gap: 12px; margin-top: 24px; }
+.fb-fake .fake-card {
+  flex: 1; height: 78px; background: var(--canvas-3); border-radius: 8px;
+  border: 1px solid var(--rule);
+}
+.fb-toast {
+  position: absolute;
+  bottom: 22px; right: 22px;
+  width: 280px;
+  z-index: 2;
+}
+
+/* Detail drawer (price hikes) */
+.drawer {
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 26px;
+  position: relative;
+}
+.drawer-top {
+  display: flex; align-items: center; gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 20px;
+}
+.drawer-top .sub-icon { width: 44px; height: 44px; font-size: 18px; }
+.drawer-top .label {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  letter-spacing: .06em; text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.drawer-top .name {
+  font-size: 20px; font-weight: 600; color: var(--ink);
+  letter-spacing: -0.015em;
+}
+.drawer-top .right-amt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px; font-weight: 500;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+.warning-card {
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in oklab, var(--accent) 60%, transparent);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.warning-card .wc-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.warning-card .wc-label::before {
+  content: ''; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: inline-block;
+}
+.warning-card .wc-text {
+  font-size: 15px; line-height: 1.5; color: var(--ink); margin: 0 0 14px;
+}
+.warning-card .wc-btn {
+  display: inline-block;
+  background: var(--ink);
+  color: var(--canvas);
+  padding: 8px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.kv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.kv-cell {
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--rule);
+}
+.kv-cell:nth-child(odd) { border-right: 1px solid var(--rule); padding-right: 16px; }
+.kv-cell:nth-child(even) { padding-left: 16px; }
+.kv-cell:nth-last-child(-n+2) { border-bottom: none; }
+.kv-cell .k {
+  font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 4px;
+}
+.kv-cell .v {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.kv-cell .v.sans { font-family: 'General Sans', sans-serif; font-weight: 500; }
+
+/* Insights mock (shadow charges) */
+.insights {
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 28px;
+}
+.insights .label-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.insights .ins-label {
+  font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted);
+}
+.insights .big {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(40px, 5vw, 56px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  margin: 6px 0 4px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.insights .big-sub {
+  font-size: 14px; color: var(--ink-2); margin-bottom: 22px;
+}
+.insights .review-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px;
+  background: var(--canvas-3);
+  border-radius: 12px;
+  margin-bottom: 22px;
+}
+.insights .review-row .meta { flex: 1; }
+.insights .review-row .name-row { font-weight: 600; font-size: 15px; color: var(--ink); }
+.insights .review-row .sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.insights .review-btn {
+  background: var(--accent); color: var(--accent-ink);
+  padding: 7px 12px; border-radius: 7px;
+  font-size: 13px; font-weight: 600;
+}
+.mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.mini-stat {
+  padding: 14px 16px;
+  background: var(--canvas-3);
+  border-radius: 10px;
+}
+.mini-stat .lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px;
+}
+.mini-stat .val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px; font-weight: 500; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   Gmail section
+   ============================================================ */
+.gmail {
+  background: linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--accent-soft) 60%, transparent) 30%, color-mix(in oklab, var(--accent-soft) 60%, transparent) 70%, transparent 100%);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 120px 0;
+}
+.gmail-head { text-align: center; max-width: 760px; margin: 0 auto 56px; }
+.gmail-head .subhead { margin: 0 auto; }
+.gmail-body { max-width: 720px; margin: 0 auto 56px; }
+.gmail-body p { font-size: 17px; line-height: 1.65; color: var(--ink-2); margin: 0 0 18px; }
+.gmail-body p:last-child { margin: 0; }
+
+.howitworks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 980px;
+  margin: 0 auto 56px;
+}
+.hiw-step {
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 26px 24px;
+  position: relative;
+}
+.hiw-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.hiw-title {
+  font-weight: 600; font-size: 17px; color: var(--ink);
+  letter-spacing: -0.01em; margin: 0 0 8px;
+}
+.hiw-desc {
+  font-size: 14px; line-height: 1.55; color: var(--ink-2); margin: 0;
+}
+
+.waitlist {
+  max-width: 540px;
+  margin: 0 auto;
+  background: var(--canvas-2);
+  border: 1px solid color-mix(in oklab, var(--accent) 50%, var(--rule));
+  border-radius: 14px;
+  padding: 28px 28px 22px;
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+.waitlist h3 {
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.waitlist form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.waitlist input {
+  flex: 1;
+  border: 1px solid var(--rule);
+  background: var(--canvas);
+  color: var(--ink);
+  border-radius: 9px;
+  padding: 12px 14px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color .2s ease, background-color .2s ease;
+}
+.waitlist input:focus { border-color: var(--accent); }
+.waitlist input::placeholder { color: var(--muted); }
+.waitlist button {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: 9px;
+  padding: 12px 18px;
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.waitlist button:hover { background: var(--accent-hover); }
+.waitlist .perk {
+  font-size: 13px; color: var(--muted); margin: 0;
+}
+.waitlist .err {
+  display: none;
+  color: var(--danger);
+  font-size: 13px;
+  margin: -6px 0 8px;
+  text-align: left;
+}
+.waitlist .err.show { display: block; }
+.waitlist .success {
+  font-size: 15px;
+  color: var(--ink);
+  padding: 10px 0;
+  font-weight: 500;
+}
+.waitlist .success::before {
+  content: '✓'; color: var(--accent); margin-right: 8px; font-weight: 700;
+}
+/* ----- CARD layout: compact 2-column waitlist panel ----- */
+.gmail[data-layout="card"] {
+  padding: 96px 0;
+  background: transparent;
+}
+.gmail[data-layout="card"] > .container {
+  max-width: 1080px;
+}
+.gmail[data-layout="card"] .gmail-head,
+.gmail[data-layout="card"] .gmail-body,
+.gmail[data-layout="card"] .howitworks,
+.gmail[data-layout="card"] .gmail-privacy { display: none; }
+
+.gmail-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 0;
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 color-mix(in oklab, var(--ink) 4%, transparent),
+    0 30px 60px -36px color-mix(in oklab, var(--ink) 30%, transparent);
+}
+
+.gmail-panel-text {
+  padding: 44px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.gmail-panel-text .gp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 5px 10px 5px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in oklab, var(--accent) 30%, var(--rule));
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.gmail-panel-text .gp-eyebrow svg { color: color-mix(in oklab, var(--accent) 70%, var(--ink)); }
+.gmail-panel-text h2 {
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.gmail-panel-text .gp-sub {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin: 0;
+  max-width: 460px;
+}
+.gmail-panel-text .gp-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.gmail-panel-text .gp-form input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--rule);
+  background: var(--canvas);
+  color: var(--ink);
+  padding: 12px 14px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.gmail-panel-text .gp-form input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-glow);
+}
+.gmail-panel-text .gp-form input::placeholder { color: var(--muted); }
+.gmail-panel-text .gp-form button {
+  background: var(--ink);
+  color: var(--canvas);
+  border: none;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform .12s ease, background-color .2s ease;
+}
+.gmail-panel-text .gp-form button:hover { background: color-mix(in oklab, var(--ink) 88%, var(--accent)); }
+.gmail-panel-text .gp-form button:active { transform: translateY(1px); }
+.gmail-panel-text .gp-err {
+  display: none;
+  font-size: 13px;
+  color: var(--danger);
+  margin: -8px 0 0;
+}
+.gmail-panel-text .gp-err.show { display: block; }
+.gmail-panel-text .gp-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-top: 2px;
+}
+.gmail-panel-text .gp-trust .trust-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-2);
+  background: color-mix(in oklab, var(--canvas) 50%, transparent);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 4px 10px 4px 8px;
+}
+.gmail-panel-text .gp-trust .trust-pill svg {
+  width: 12px; height: 12px;
+  color: color-mix(in oklab, var(--leaf) 80%, var(--ink) 20%);
+}
+.gmail-panel-text .success {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--leaf) 14%, var(--canvas));
+  border: 1px solid color-mix(in oklab, var(--leaf) 35%, var(--rule));
+  font-weight: 500;
+}
+.gmail-panel-text .success::before {
+  content: '✓';
+  color: var(--leaf);
+  margin-right: 8px;
+  font-weight: 700;
+}
+.gmail-panel-text .gp-perk {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Visual side — fake scan preview */
+.gmail-panel-visual {
+  position: relative;
+  padding: 36px 36px 36px 0;
+  display: flex;
+  align-items: stretch;
+  background:
+    radial-gradient(80% 80% at 100% 0%, color-mix(in oklab, var(--accent-soft) 90%, transparent) 0%, transparent 65%),
+    color-mix(in oklab, var(--canvas-3) 35%, var(--canvas-2));
+  border-left: 1px solid var(--rule);
+}
+.scan-mock {
+  flex: 1;
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px -18px color-mix(in oklab, var(--ink) 30%, transparent);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  align-self: center;
+  margin-left: 36px;
+  width: 100%;
+}
+.scan-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--canvas-3) 30%, var(--canvas-2));
+}
+.scan-dots { display: inline-flex; gap: 5px; }
+.scan-dots i {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--rule-strong);
+  display: block;
+}
+.scan-dots i:first-child { background: #FF5F57; }
+.scan-dots i:nth-child(2) { background: #FEBC2E; }
+.scan-dots i:nth-child(3) { background: #28C840; }
+.scan-title {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.01em;
+}
+.scan-title .live {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 6px;
+  vertical-align: 1px;
+  box-shadow: 0 0 0 0 var(--accent-glow);
+  animation: scan-pulse 1.6s ease-in-out infinite;
+}
+@keyframes scan-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+.scan-progress {
+  height: 2px;
+  background: var(--rule);
+  position: relative;
+  overflow: hidden;
+}
+.scan-progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scan-sweep 2.2s linear infinite;
+}
+@keyframes scan-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+.scan-rows { padding: 6px 0; }
+.scan-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--ink);
+  border-bottom: 1px solid color-mix(in oklab, var(--rule) 60%, transparent);
+  opacity: 0;
+  animation: scan-row-in .5s ease-out forwards;
+}
+.scan-row:nth-child(1) { animation-delay: .2s; }
+.scan-row:nth-child(2) { animation-delay: .5s; }
+.scan-row:nth-child(3) { animation-delay: .8s; }
+.scan-row:nth-child(4) { animation-delay: 1.1s; }
+.scan-row:nth-child(5) { animation-delay: 1.4s; }
+.scan-row:last-child { border-bottom: none; }
+@keyframes scan-row-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.scan-row .check {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--leaf) 18%, var(--canvas-2));
+  color: var(--leaf);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.scan-row .check svg { width: 10px; height: 10px; }
+.scan-row .name {
+  flex: 1;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scan-row .amt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.scan-row.scanning {
+  color: var(--muted);
+  font-style: italic;
+}
+.scan-row.scanning .check {
+  background: transparent;
+  border: 1.5px dashed var(--rule-strong);
+  color: transparent;
+  animation: scan-spin 1.4s linear infinite;
+}
+@keyframes scan-spin {
+  to { transform: rotate(360deg); }
+}
+.scan-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-top: 1px solid var(--rule);
+  background: color-mix(in oklab, var(--canvas-3) 40%, var(--canvas-2));
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.scan-footer .count {
+  color: var(--ink);
+  font-weight: 600;
+}
+.scan-footer .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--leaf);
+  font-weight: 600;
+}
+.scan-footer .badge::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--leaf);
+}
+
+@media (max-width: 880px) {
+  .gmail[data-layout="card"] { padding: 64px 0; }
+  .gmail-panel { grid-template-columns: 1fr; }
+  .gmail-panel-text { padding: 32px 28px 26px; }
+  .gmail-panel-visual {
+    padding: 0 28px 32px;
+    border-left: none;
+    border-top: 1px solid var(--rule);
+  }
+  .scan-mock { margin-left: 0; margin-top: 28px; }
+}
+@media (max-width: 520px) {
+  .gmail-panel-text .gp-form { flex-direction: column; }
+  .gmail-panel-text .gp-form button { padding: 12px; width: 100%; }
+}
+
+.gmail-privacy {
+  text-align: center;
+  max-width: 600px;
+  margin: 22px auto 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Privacy section
+   ============================================================ */
+.privacy {
+  background: var(--canvas-3);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 120px 0;
+}
+.privacy-inner {
+  max-width: 720px; margin: 0 auto; text-align: center;
+}
+.privacy-inner .body-copy {
+  font-size: 17px;
+  color: var(--ink-2);
+  line-height: 1.65;
+  margin: 0 0 28px;
+  text-align: left;
+}
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px 32px;
+  margin: 0 0 28px;
+}
+.check {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 500; color: var(--ink);
+  white-space: nowrap;
+}
+.check::before {
+  content: ''; width: 18px; height: 18px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: inline-grid;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5l3 3 6-6' stroke='%2315110C' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-size: 14px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* ============================================================
+   Comparison section
+   ============================================================ */
+.compare {
+  padding: 120px 0;
+}
+.compare-head { text-align: center; max-width: 720px; margin: 0 auto 56px; }
+.compare-head .subhead { margin: 0 auto; }
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.compare-card {
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  padding: 36px 32px 32px;
+  position: relative;
+}
+.compare-card.others { opacity: 0.85; }
+.compare-card.catchly {
+  border: 1px solid color-mix(in oklab, var(--accent) 60%, transparent);
+  background:
+    linear-gradient(180deg, var(--accent-soft) 0%, var(--canvas-2) 22%);
+}
+.cc-corner {
+  position: absolute;
+  top: 20px; right: 22px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.cc-corner.muted { color: var(--muted); }
+.cc-corner.brand { color: var(--accent-ink); background: var(--accent); padding: 4px 9px; border-radius: 6px; }
+:root[data-theme="dark"] .cc-corner.brand { color: var(--accent-ink); }
+.compare-card h3 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.compare-card.others h3 { color: var(--ink-2); }
+.compare-card.catchly h3 { color: var(--ink); }
+.compare-card .desc {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 22px;
+}
+.compare-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.compare-list li {
+  display: flex; gap: 12px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+}
+.compare-list li:first-child { border-top: none; padding-top: 0; }
+.compare-list li::before {
+  content: ''; flex-shrink: 0;
+  width: 18px; height: 18px; margin-top: 2px;
+  border-radius: 50%;
+  background-size: 12px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.compare-card.others .compare-list li::before {
+  background-color: color-mix(in oklab, var(--danger) 14%, transparent);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 4l8 8M12 4l-8 8' stroke='%23B42318' stroke-width='2' stroke-linecap='round'/></svg>");
+}
+:root[data-theme="dark"] .compare-card.others .compare-list li::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 4l8 8M12 4l-8 8' stroke='%23FF6B6B' stroke-width='2' stroke-linecap='round'/></svg>");
+}
+.compare-card.catchly .compare-list li::before {
+  background-color: var(--accent);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5l3 3 6-6' stroke='%2315110C' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+
+.compare-cta { text-align: center; margin-top: 48px; }
+.compare-cta .below-cta {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+  margin-top: 18px;
+}
+
+/* ============================================================
+   Final CTA
+   ============================================================ */
+.final-cta {
+  padding: 140px 0;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+.final-cta::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 900px; height: 900px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+.final-cta-inner { position: relative; z-index: 1; }
+.final-cta h2 {
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
+  margin: 0 0 18px;
+  max-width: 18ch;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--ink);
+}
+.final-cta .sub {
+  font-size: 18px;
+  color: var(--ink-2);
+  margin: 0 0 32px;
+}
+.final-cta .tiny {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 18px;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  padding: 56px 0 64px;
+  border-top: 1px solid var(--rule);
+}
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.footer-left { display: flex; gap: 14px; align-items: flex-start; }
+.footer-mark {
+  width: 24px; height: 24px; border-radius: 6px;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+  background: var(--ink);
+}
+.footer-mark img { width: 100%; height: 100%; display: block; }
+.footer-left .meta { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+.footer-left .meta .tag { color: var(--muted); font-style: italic; }
+.footer-links {
+  display: flex; gap: 22px;
+}
+.footer-links a {
+  font-size: 14px; font-weight: 500; color: var(--ink-2);
+  transition: color .15s ease;
+}
+.footer-links a:hover { color: var(--ink); }
+.footer-bottom {
+  text-align: center;
+  margin-top: 36px;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* ============================================================
+   Reveal animation
+   ============================================================ */
+/* Reveals are progressive enhancement only:
+   default = visible, no transform, no flash.
+   html.js opts in to the hide-then-animate behavior.
+   Uses one-shot animation + forwards so final state is committed
+   even if the transition pipeline is interrupted. */
+.reveal { opacity: 1; transform: none; }
+html.js .reveal:not(.in) { opacity: 0; transform: translateY(16px); }
+html.js .reveal.in { animation: reveal-in .7s cubic-bezier(.2,.6,.2,1) both; }
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .feature { padding: 80px 0; }
+  .feature-grid { grid-template-columns: 1fr; gap: 48px; }
+  .feature.reverse .feature-grid > .feature-visual { order: 1; }
+  .feature.reverse .feature-grid > .feature-text { order: 2; }
+  .feature-grid > .feature-visual { order: 1; }
+  .feature-grid > .feature-text { order: 2; }
+  .compare-grid { grid-template-columns: 1fr; max-width: 600px; }
+  .hero-visual-wrap .toast-bob {
+    right: -10px;
+    width: 240px;
+    bottom: 10%;
+  }
+  .gmail, .privacy, .compare, .final-cta { padding: 80px 0; }
+  .gmail-body, .privacy-inner { padding: 0 8px; }
+  .ws-page { padding: 36px 32px 36px; }
+  .ws-card { grid-template-columns: 88px 1fr; gap: 18px; }
+  .ws-icon { width: 88px; height: 88px; border-radius: 18px; }
+  .ws-icon svg { width: 46px; height: 46px; }
+  .ws-action { grid-column: 1 / -1; margin-top: 4px; }
+  .ws-name { font-size: 24px; }
+  .ws-tag { font-size: 14px; }
+  .ws-cursor { right: 50px; bottom: -10px; }
+}
+@media (max-width: 720px) {
+  .howitworks { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .container { padding: 0 16px; }
+  .nav-links { display: none; }
+  .nav .btn-primary { padding: 10px 14px; font-size: 14px; }
+  .hero { padding: 56px 0 32px; }
+  .hero-visual-wrap { margin-top: 48px; }
+  .hero-visual-wrap .toast-bob { display: none; }
+  .popup { max-width: 340px; }
+  .btn-primary.large { width: 100%; justify-content: center; }
+  .feature, .gmail, .privacy, .compare, .final-cta { padding: 64px 0; }
+  .compare-card { padding: 28px 22px; }
+  .fb-body { height: 280px; padding: 18px; }
+  .fb-toast { right: 12px; bottom: 12px; width: calc(100% - 24px); max-width: 280px; }
+  .credibility { padding: 36px 0 40px; }
+  .cred-chip { font-size: 14px; }
+  .cred-row { gap: 28px; padding-right: 28px; }
+  .cred-track { animation-duration: 40s; }
+  .waitlist form { flex-direction: column; }
+  .waitlist button { width: 100%; }
+  .footer-row { flex-direction: column; gap: 24px; }
+  .hero-beta { font-size: 12px; }
+  .ws-page { padding: 24px 20px 26px; }
+  .ws-tab { padding: 7px 12px; font-size: 11px; }
+  .ws-tab.active { max-width: 180px; }
+  .ws-urlbar { padding: 8px 12px; gap: 8px; }
+  .ws-nav-btns { display: none; }
+  .ws-url { font-size: 11px; padding: 6px 10px; }
+  .ws-card { grid-template-columns: 64px 1fr; gap: 14px; margin-bottom: 24px; }
+  .ws-icon { width: 64px; height: 64px; border-radius: 14px; }
+  .ws-icon svg { width: 36px; height: 36px; }
+  .ws-name { font-size: 20px; }
+  .ws-tag { font-size: 13px; margin-bottom: 8px; }
+  .ws-bylinerow { font-size: 11px; gap: 8px; flex-wrap: wrap; }
+  .ws-install { padding: 11px 18px; font-size: 14px; width: 100%; justify-content: center; }
+  .ws-cursor { display: none; }
+  .ws-strip { grid-template-columns: 1.6fr 1fr; }
+  .ws-strip .ws-screen:nth-child(3) { display: none; }
+  .ws-breadcrumb { font-size: 10.5px; margin-bottom: 18px; }
+  .tweaks-panel { right: 12px; bottom: 12px; width: calc(100vw - 24px); max-width: 264px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<header class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="#" class="brand" aria-label="Catchly home">
+      <span class="brand-mark" aria-hidden="true">
+        <img src="appicon.png" alt="" width="38" height="38" decoding="async" />
+      </span>
+      <span>catchly</span>
+    </a>
+    <nav class="nav-right" aria-label="Primary">
+      <div class="nav-links">
+        <a href="#detection">Features</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#gmail">Gmail scan</a>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode" type="button">
+        <svg class="icon-moon" width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M13.5 9.5A5.5 5.5 0 1 1 6.5 2.5a4.5 4.5 0 0 0 7 7Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+        <svg class="icon-sun" width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <a href="#install" class="btn-primary">Add to Chrome — Free</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero" id="install">
+  <div class="container hero-inner">
+    <div class="hero-beta reveal">
+      <span class="pulse" aria-hidden="true"></span>
+      Now in private beta
+    </div>
+    <h1 class="hero-h reveal" data-cycle="on">Catch the<br/><span class="hero-swap">subscriptions you forgot.</span></h1>
+    <p class="subhead reveal" style="text-align:center;">A Chrome extension that quietly tracks every recurring charge — without ever asking for your bank login.</p>
+    <div class="hero-cta-row reveal">
+      <a href="#install" class="btn-primary large">Add to Chrome — Free</a>
+      <div class="trust-line">Free · No account · No bank connection · Local-only</div>
+    </div>
+
+    <div class="hero-visual-wrap reveal" aria-hidden="true" data-visual="webstore">
+      <!-- Variant A: Chrome Web Store wireframe (default) -->
+      <div class="webstore-shell">
+        <div class="ws-tabs">
+          <div class="ws-tab active">
+            <span class="ws-favicon" aria-hidden="true"></span>
+            Chrome Web Store — Catchly
+          </div>
+          <span class="ws-newtab" aria-hidden="true">+</span>
+        </div>
+        <div class="ws-urlbar">
+          <div class="ws-nav-btns" aria-hidden="true">
+            <span>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M12 7a4 4 0 1 1-1.3-2.96L13 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M13 2v3.5H9.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <div class="ws-url">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.3"/></svg>
+            <span><span class="ws-url-domain">chromewebstore.google.com</span>/detail/catchly</span>
+            <span class="ws-url-star">☆</span>
+          </div>
+        </div>
+        <div class="ws-page">
+          <div class="ws-breadcrumb"><b>Chrome Web Store</b> &nbsp;›&nbsp; Extensions &nbsp;›&nbsp; Productivity</div>
+          <div class="ws-card">
+            <div class="ws-icon">
+              <img src="appicon.png" alt="Catchly app icon" width="110" height="110" decoding="async" />
+            </div>
+            <div class="ws-meta" style="height: 114px">
+              <div class="ws-name" style="line-height: 1.2">Catchly</div>
+              <p class="ws-tag">Quietly tracks every recurring charge. No bank login. No account. Local-only.</p>
+              <div class="ws-bylinerow">
+                <span class="ws-verified">getcatchly.com</span>
+                <span class="ws-byline-sep">·</span>
+                <span><span class="ws-stars">★★★★★</span> 4.9 (212)</span>
+                <span class="ws-byline-sep">·</span>
+                <span>Free</span>
+              </div>
+            </div>
+            <div class="ws-action">
+              <button type="button" class="ws-install" tabindex="-1">Add to Chrome</button>
+              <span class="ws-cursor" aria-hidden="true">
+                <svg width="22" height="26" viewBox="0 0 22 26" fill="none">
+                  <path d="M2 2l16 12-7 1.5L7.5 23 2 2z" fill="#fff" stroke="#15110C" stroke-width="1.4" stroke-linejoin="round"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+          <div class="ws-strip">
+            <div class="ws-screen accent">
+              <div class="ws-screen-rows"><i></i><i></i><i></i><i></i></div>
+            </div>
+            <div class="ws-screen">
+              <div class="ws-screen-rows"><i></i><i></i><i></i></div>
+            </div>
+            <div class="ws-screen">
+              <div class="ws-screen-rows"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant B: original popup mockup (kept for Tweaks toggle) -->
+      <div class="popup-float">
+        <div class="popup">
+          <div class="popup-head">
+            <div class="title">
+              <span class="mini-mark">
+                <img src="appicon.png" alt="" width="22" height="22" decoding="async" />
+              </span>
+              catchly
+            </div>
+            <div class="icons" aria-hidden="true">
+              <span>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M13 13l-2.5-2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </span>
+              <span>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="13" cy="8" r="1.2" fill="currentColor"/></svg>
+              </span>
+            </div>
+          </div>
+          <div class="popup-summary">
+            <div class="stat">
+              <span class="label">Monthly</span>
+              <span class="value">$87</span>
+            </div>
+            <div class="stat">
+              <span class="label">Yearly</span>
+              <span class="value">$1,044</span>
+            </div>
+            <div class="stat">
+              <span class="label">Active</span>
+              <span class="value">5</span>
+            </div>
+          </div>
+          <div class="popup-list">
+            <div class="sub-row">
+              <div class="sub-icon svc-netflix">N</div>
+              <div class="sub-meta">
+                <div class="sub-name">Netflix <span class="pill pill-warn">Price ↑</span></div>
+                <div class="sub-when">Renews in 3 days</div>
+              </div>
+              <div class="sub-amount">$24.99</div>
+            </div>
+            <div class="sub-row">
+              <div class="sub-icon svc-adobe">A</div>
+              <div class="sub-meta">
+                <div class="sub-name">Adobe CC <span class="pill pill-danger">Trial</span></div>
+                <div class="sub-when">Renews in 2 days</div>
+              </div>
+              <div class="sub-amount">$59.99</div>
+            </div>
+            <div class="sub-row">
+              <div class="sub-icon svc-chatgpt">C</div>
+              <div class="sub-meta">
+                <div class="sub-name">ChatGPT Plus</div>
+                <div class="sub-when">Renews in 18 days</div>
+              </div>
+              <div class="sub-amount">$20.00</div>
+            </div>
+            <div class="sub-row">
+              <div class="sub-icon svc-audible">A</div>
+              <div class="sub-meta">
+                <div class="sub-name">Audible</div>
+                <div class="sub-when">Renews in 11 days</div>
+              </div>
+              <div class="sub-amount">$14.95</div>
+            </div>
+            <div class="sub-row">
+              <div class="sub-icon svc-spotify">S</div>
+              <div class="sub-meta">
+                <div class="sub-name">Spotify</div>
+                <div class="sub-when">Renews in 22 days</div>
+              </div>
+              <div class="sub-amount">$11.99</div>
+            </div>
+          </div>
+          <div class="popup-tabs">
+            <div class="popup-tab active">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 6.5h11" stroke="currentColor" stroke-width="1.3"/></svg>
+              Subscriptions
+            </div>
+            <div class="popup-tab">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2.5a3 3 0 0 0-3 3v3l-1.5 2h9L11 8.5v-3a3 3 0 0 0-3-3ZM6.5 13a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              Alerts
+            </div>
+            <div class="popup-tab">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 12V8.5M7 12V5M11 12V9M3 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Insights
+            </div>
+            <div class="popup-tab">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M3.8 12.2l1.1-1.1M11.1 4.9l1.1-1.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              Settings
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toast-bob">
+        <div class="toast">
+          <div class="toast-head">
+            <div class="toast-label"><span class="dot"></span>Subscription detected</div>
+            <span class="toast-close" aria-hidden="true">×</span>
+          </div>
+          <div class="toast-title">
+            <span class="sub-icon svc-netflix" style="width:28px;height:28px;font-size:13px;">N</span>
+            Netflix
+          </div>
+          <div class="toast-amount">$24.99 / month · Standard plan</div>
+          <div class="toast-actions">
+            <span class="toast-btn primary">Track this</span>
+            <span class="toast-btn ghost">Not now</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CREDIBILITY STRIP
+     ============================================================ -->
+<section class="credibility reveal">
+  <div class="container">
+    <div class="eyebrow"><span class="dot"></span>Tracks 200+ subscription services</div>
+  </div>
+  <div class="cred-marquee" aria-hidden="true">
+    <div class="cred-track">
+      <div class="cred-row">
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 0h4l6 14V0h4v24h-4L9 10v14H5z"/></svg></span>
+          Netflix
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M6.6 9.4c3.2-1 7.6-.6 10.8 1.6M7.2 13.2c2.6-.6 6-.4 8.6 1.2M7.8 16.4c2.1-.4 4.5-.3 6.4.8"/></svg></span>
+          Spotify
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5l9.5 5.5v10l-9.5 5.5L2.5 17V7L12 1.5zm0 2.5L5 8v8l7 4 7-4V8l-7-4zm0 4l5 3v4l-5 3-5-3v-4l5-3z"/></svg></span>
+          ChatGPT
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7l10 1v10L7 17z" fill="currentColor" stroke="none"/></svg></span>
+          Notion
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h7v18H3zm11 0h7v18h-7zM8 21l4-12 4 12h-3l-1-3-3 3z"/></svg></span>
+          Adobe
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 16l4-9 4 9M9.2 13.5h5.6"/></svg></span>
+          Audible
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h5a9 9 0 0 1 9 9v-2a7 7 0 0 0-7-7H6v16h3a7 7 0 0 0 7-7v4a9 9 0 0 1-9 9H4z"/><path d="M20 11h1v2h-1v1h-2v-1h-1v-2h1v-1h2z"/></svg></span>
+          Disney+
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v3H4zm0 5h16v3H4zm0 5h16v6l-8-4-8 4z"/></svg></span>
+          Substack
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4h-7v12h-2V8H4z"/><path d="M16 2c1.6 0 2.5 1 2.5 2.1S17.6 6 16 6s-2.5-1-2.5-1.9S14.4 2 16 2z" opacity=".5"/></svg></span>
+          NYT
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.7C6.3 1.7 1.7 6.3 1.7 12c0 4.6 3 8.4 7 9.8.5.1.7-.2.7-.5v-1.7c-2.9.6-3.5-1.4-3.5-1.4-.5-1.2-1.1-1.5-1.1-1.5-1-.6.1-.6.1-.6 1 .1 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.7-1.4-2.3-.3-4.8-1.2-4.8-5.2 0-1.1.4-2.1 1.1-2.8-.1-.3-.5-1.4.1-2.9 0 0 .9-.3 2.9 1.1.8-.2 1.7-.3 2.6-.3.9 0 1.8.1 2.6.3 2-1.4 2.9-1.1 2.9-1.1.6 1.5.2 2.6.1 2.9.7.8 1.1 1.7 1.1 2.8 0 4-2.5 4.9-4.8 5.2.4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5 4-1.4 7-5.2 7-9.8 0-5.7-4.6-10.3-10.3-10.3z"/></svg></span>
+          GitHub
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 2h4v6H8a3 3 0 1 1 0-6zm0 8h4v6H8a3 3 0 1 1 0-6zm0 8h4v3a3 3 0 1 1-3-3zm5-16h3a3 3 0 0 1 0 6h-3zm0 8h3a3 3 0 0 1 0 6 3 3 0 0 1 0-6z"/></svg></span>
+          Figma
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M7 7l10 10M7 12l5 5M7 17l2 2" stroke-linecap="round"/></svg></span>
+          Linear
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.4 13.2c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.6-1.9-1.6-.2-3 .9-3.8.9-.8 0-2-.9-3.2-.9-1.7 0-3.2 1-4.1 2.5-1.7 3-.4 7.5 1.3 10 .8 1.2 1.7 2.5 3 2.5 1.2 0 1.6-.8 3.1-.8 1.4 0 1.8.8 3.1.7 1.3 0 2.1-1.2 2.9-2.4.9-1.4 1.3-2.7 1.3-2.7-.1 0-2.5-.9-2.6-3.7l.5-.5zm-2.5-6.6c.6-.8 1.1-1.9 1-3-.9.1-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2-.5 2.7-1.3z"/></svg></span>
+          Apple TV+
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 4h3v8a4 4 0 0 0 4 4 4 4 0 0 0 4-4V4h3v8a7 7 0 0 1-7 7 7 7 0 0 1-7-7zm15 0h3v16h-3z"/></svg></span>
+          Hulu
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M10 8.5l5 3.5-5 3.5z" fill="currentColor"/></svg></span>
+          YouTube Premium
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="11" r="2" fill="currentColor"/><path d="M12 13v4" stroke-linecap="round"/></svg></span>
+          1Password
+        </span>
+      </div>
+      <div class="cred-row" aria-hidden="true">
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 0h4l6 14V0h4v24h-4L9 10v14H5z"/></svg></span>
+          Netflix
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M6.6 9.4c3.2-1 7.6-.6 10.8 1.6M7.2 13.2c2.6-.6 6-.4 8.6 1.2M7.8 16.4c2.1-.4 4.5-.3 6.4.8"/></svg></span>
+          Spotify
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5l9.5 5.5v10l-9.5 5.5L2.5 17V7L12 1.5zm0 2.5L5 8v8l7 4 7-4V8l-7-4zm0 4l5 3v4l-5 3-5-3v-4l5-3z"/></svg></span>
+          ChatGPT
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7l10 1v10L7 17z" fill="currentColor" stroke="none"/></svg></span>
+          Notion
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h7v18H3zm11 0h7v18h-7zM8 21l4-12 4 12h-3l-1-3-3 3z"/></svg></span>
+          Adobe
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 16l4-9 4 9M9.2 13.5h5.6"/></svg></span>
+          Audible
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h5a9 9 0 0 1 9 9v-2a7 7 0 0 0-7-7H6v16h3a7 7 0 0 0 7-7v4a9 9 0 0 1-9 9H4z"/><path d="M20 11h1v2h-1v1h-2v-1h-1v-2h1v-1h2z"/></svg></span>
+          Disney+
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v3H4zm0 5h16v3H4zm0 5h16v6l-8-4-8 4z"/></svg></span>
+          Substack
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v4h-7v12h-2V8H4z"/><path d="M16 2c1.6 0 2.5 1 2.5 2.1S17.6 6 16 6s-2.5-1-2.5-1.9S14.4 2 16 2z" opacity=".5"/></svg></span>
+          NYT
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.7C6.3 1.7 1.7 6.3 1.7 12c0 4.6 3 8.4 7 9.8.5.1.7-.2.7-.5v-1.7c-2.9.6-3.5-1.4-3.5-1.4-.5-1.2-1.1-1.5-1.1-1.5-1-.6.1-.6.1-.6 1 .1 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.7-1.4-2.3-.3-4.8-1.2-4.8-5.2 0-1.1.4-2.1 1.1-2.8-.1-.3-.5-1.4.1-2.9 0 0 .9-.3 2.9 1.1.8-.2 1.7-.3 2.6-.3.9 0 1.8.1 2.6.3 2-1.4 2.9-1.1 2.9-1.1.6 1.5.2 2.6.1 2.9.7.8 1.1 1.7 1.1 2.8 0 4-2.5 4.9-4.8 5.2.4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5 4-1.4 7-5.2 7-9.8 0-5.7-4.6-10.3-10.3-10.3z"/></svg></span>
+          GitHub
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 2h4v6H8a3 3 0 1 1 0-6zm0 8h4v6H8a3 3 0 1 1 0-6zm0 8h4v3a3 3 0 1 1-3-3zm5-16h3a3 3 0 0 1 0 6h-3zm0 8h3a3 3 0 0 1 0 6 3 3 0 0 1 0-6z"/></svg></span>
+          Figma
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M7 7l10 10M7 12l5 5M7 17l2 2" stroke-linecap="round"/></svg></span>
+          Linear
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.4 13.2c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.6-1.9-1.6-.2-3 .9-3.8.9-.8 0-2-.9-3.2-.9-1.7 0-3.2 1-4.1 2.5-1.7 3-.4 7.5 1.3 10 .8 1.2 1.7 2.5 3 2.5 1.2 0 1.6-.8 3.1-.8 1.4 0 1.8.8 3.1.7 1.3 0 2.1-1.2 2.9-2.4.9-1.4 1.3-2.7 1.3-2.7-.1 0-2.5-.9-2.6-3.7l.5-.5zm-2.5-6.6c.6-.8 1.1-1.9 1-3-.9.1-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2-.5 2.7-1.3z"/></svg></span>
+          Apple TV+
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 4h3v8a4 4 0 0 0 4 4 4 4 0 0 0 4-4V4h3v8a7 7 0 0 1-7 7 7 7 0 0 1-7-7zm15 0h3v16h-3z"/></svg></span>
+          Hulu
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M10 8.5l5 3.5-5 3.5z" fill="currentColor"/></svg></span>
+          YouTube Premium
+        </span>
+        <span class="cred-chip">
+          <span class="cred-glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="11" r="2" fill="currentColor"/><path d="M12 13v4" stroke-linecap="round"/></svg></span>
+          1Password
+        </span>
+      </div>
+    </div>
+  </div>
+  <p class="sr-only">Tracks 200+ subscription services including Netflix, Spotify, ChatGPT, Notion, Adobe, Audible, Disney+, Substack, NYT, GitHub, Figma, Linear, Apple TV+, Hulu, YouTube Premium, 1Password and more.</p>
+</section>
+
+<!-- ============================================================
+     SECTION 4 — DETECTION
+     ============================================================ -->
+<section class="feature" id="detection">
+  <div class="container feature-grid">
+    <div class="feature-visual reveal" aria-hidden="true">
+      <div class="fakebrowser">
+        <div class="fb-head">
+          <div class="fb-dots"><i></i><i></i><i></i></div>
+          <div class="fb-url">netflix.com/signup/plans</div>
+        </div>
+        <div class="fb-body">
+          <div class="fb-fake">
+            <div class="fake-logo"></div>
+            <div class="fake-row w70"></div>
+            <div class="fake-row w55"></div>
+            <div class="fake-row w80"></div>
+            <div class="fake-row w40"></div>
+            <div class="fake-card-row">
+              <div class="fake-card"></div>
+              <div class="fake-card"></div>
+              <div class="fake-card"></div>
+            </div>
+          </div>
+          <div class="fb-toast">
+            <div class="toast">
+              <div class="toast-head">
+                <div class="toast-label"><span class="dot"></span>Subscription detected</div>
+                <span class="toast-close" aria-hidden="true">×</span>
+              </div>
+              <div class="toast-title">
+                <span class="sub-icon svc-netflix" style="width:28px;height:28px;font-size:13px;">N</span>
+                Netflix
+              </div>
+              <div class="toast-amount">$24.99 / month · Standard plan</div>
+              <div class="toast-actions">
+                <span class="toast-btn primary">Track this</span>
+                <span class="toast-btn ghost">Not now</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="feature-text reveal">
+      <div class="eyebrow">Detection</div>
+      <h2 class="section-h">Catches sign-ups as they happen.</h2>
+      <p class="body-copy">The moment you start a Netflix trial or upgrade to ChatGPT Plus, a small toast appears in the corner of your browser. One click to track. No retroactive reconstruction. No bank-statement archaeology. Catchly notices subscriptions while you're starting them — before you forget.</p>
+      <a href="#install" class="btn-ghost">Add to Chrome <span class="arrow">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 5 — PRICE HIKES
+     ============================================================ -->
+<section class="feature reverse">
+  <div class="container feature-grid">
+    <div class="feature-text reveal">
+      <div class="eyebrow">Price hikes</div>
+      <h2 class="section-h">Knows when they raise prices.</h2>
+      <p class="body-copy">Netflix added $2 last month. Spotify went up $1 in March. Disney+ raised by $5 over the year. Most people don't notice for months. Catchly flags every increase the moment it happens — and tells you the cumulative damage. So you can decide if it's still worth it.</p>
+      <a href="#" class="btn-ghost">See it in action <span class="arrow">→</span></a>
+    </div>
+    <div class="feature-visual reveal" aria-hidden="true">
+      <div class="drawer">
+        <div class="drawer-top">
+          <div class="sub-icon svc-netflix">N</div>
+          <div>
+            <div class="label">Subscription</div>
+            <div class="name">Netflix</div>
+          </div>
+          <div class="right-amt">$24.99/mo</div>
+        </div>
+        <div class="warning-card">
+          <div class="wc-label">Price increase</div>
+          <p class="wc-text">Went up from <strong>$22.99</strong> to <strong>$24.99</strong> last cycle. You're paying <strong>$24/year</strong> more than a year ago.</p>
+          <a class="wc-btn">Review</a>
+        </div>
+        <div class="kv-grid">
+          <div class="kv-cell"><div class="k">Price</div><div class="v">$24.99</div></div>
+          <div class="kv-cell"><div class="k">Currency</div><div class="v">USD</div></div>
+          <div class="kv-cell"><div class="k">Cycle</div><div class="v sans">Monthly</div></div>
+          <div class="kv-cell"><div class="k">Started</div><div class="v">Mar 14, 2023</div></div>
+          <div class="kv-cell"><div class="k">Next renewal</div><div class="v">Jun 02, 2026</div></div>
+          <div class="kv-cell"><div class="k">Status</div><div class="v sans">Active</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 6 — SHADOW CHARGES
+     ============================================================ -->
+<section class="feature">
+  <div class="container feature-grid">
+    <div class="feature-visual reveal" aria-hidden="true">
+      <div class="insights">
+        <div class="label-row">
+          <div class="ins-label">Shadow spend</div>
+          <div class="ins-label" style="color:var(--ink-2);">This month</div>
+        </div>
+        <div class="big">$14.95<span style="font-size:.42em;color:var(--muted);"> /mo</span></div>
+        <div class="big-sub">Services you're paying for but not using.</div>
+
+        <div class="review-row">
+          <div class="sub-icon svc-audible">A</div>
+          <div class="meta">
+            <div class="name-row">Audible</div>
+            <div class="sub">Premium Plus · Not visited in 87 days</div>
+          </div>
+          <a class="review-btn">Review</a>
+        </div>
+
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <div class="lbl">Price hikes this year</div>
+            <div class="val">3 services</div>
+          </div>
+          <div class="mini-stat">
+            <div class="lbl">Annual run rate</div>
+            <div class="val">$1,044</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="feature-text reveal">
+      <div class="eyebrow">Shadow charges</div>
+      <h2 class="section-h">Notices what you've abandoned.</h2>
+      <p class="body-copy">Audible you haven't opened in 87 days. Apple TV+ you forgot existed. The Adobe Creative Cloud that auto-renewed during a busy month. Catchly tracks how often you actually visit each service — and warns you before renewals come due on the ones you've abandoned. The biggest source of subscription waste, finally caught.</p>
+      <a href="#install" class="btn-ghost">Try Catchly free <span class="arrow">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 7 — GMAIL AUTO-SCAN
+     ============================================================ -->
+<section class="gmail" id="gmail" data-layout="card">
+  <div class="container">
+    <div class="gmail-panel reveal" id="waitlist">
+      <div class="gmail-panel-text">
+        <span class="gp-eyebrow">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M9 1L3 9h4l-1 6 6-8H8l1-6Z"/></svg>
+          Coming next · v1.0
+        </span>
+        <h2>Find every sub hiding in your inbox.</h2>
+        <p class="gp-sub">Gmail auto-scan finds every active subscription in about 15 seconds — and parses every receipt locally in your browser. Nothing ever uploads.</p>
+
+        <form id="waitlistForm" class="gp-form" novalidate>
+          <input type="email" id="waitlistEmail" placeholder="you@somewhere.com" autocomplete="email" required aria-label="Email address" />
+          <button type="submit" id="waitlistBtn">Join waitlist</button>
+        </form>
+        <p class="gp-err err" id="waitlistErr" role="alert"></p>
+
+        <div class="gp-trust">
+          <span class="trust-pill">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 1l5 2v4c0 3.5-2 6-5 8-3-2-5-4.5-5-8V3l5-2z" stroke-linejoin="round"/></svg>
+            OAuth, read-only
+          </span>
+          <span class="trust-pill">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="12" height="9" rx="1"/><path d="M5 14h6M8 12v2" stroke-linecap="round"/></svg>
+            Parses on your device
+          </span>
+          <span class="trust-pill">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8l3.5 3.5L13 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            One free month at launch
+          </span>
+        </div>
+
+        <p class="gp-perk">We only email once — when v1.0 ships. No newsletters, no resale, no tracking.</p>
+      </div>
+
+      <div class="gmail-panel-visual" aria-hidden="true">
+        <div class="scan-mock">
+          <div class="scan-head">
+            <span class="scan-dots"><i></i><i></i><i></i></span>
+            <span class="scan-title"><span class="live"></span>scanning inbox…</span>
+          </div>
+          <div class="scan-progress"></div>
+          <div class="scan-rows">
+            <div class="scan-row">
+              <span class="check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3.5 8.5l3 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="name">Netflix</span>
+              <span class="amt">$15.99/mo</span>
+            </div>
+            <div class="scan-row">
+              <span class="check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3.5 8.5l3 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="name">Spotify Family</span>
+              <span class="amt">$16.99/mo</span>
+            </div>
+            <div class="scan-row">
+              <span class="check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3.5 8.5l3 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="name">Adobe Creative Cloud</span>
+              <span class="amt">$59.99/mo</span>
+            </div>
+            <div class="scan-row">
+              <span class="check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3.5 8.5l3 3 6-7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="name">Audible</span>
+              <span class="amt">$14.95/mo</span>
+            </div>
+            <div class="scan-row scanning">
+              <span class="check"></span>
+              <span class="name">parsing receipts…</span>
+              <span class="amt">—</span>
+            </div>
+          </div>
+          <div class="scan-footer">
+            <span class="count">12 subs · $187.40/mo</span>
+            <span class="badge">local only</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 8 — PRIVACY BY ARCHITECTURE
+     ============================================================ -->
+<section class="privacy" id="privacy">
+  <div class="container privacy-inner reveal">
+    <div class="eyebrow" style="justify-content:center;display:inline-flex;"><span class="dot"></span>Privacy by architecture</div>
+    <h2 class="section-h">Your subscriptions never leave your browser.</h2>
+    <p class="body-copy" style="margin-top:24px;">Catchly stores everything in <span class="mono" style="color:var(--ink);">chrome.storage.local</span> — your subscriptions live on your device, not on a server. There's no backend. No account. No database. We don't see your data because we don't have it. The architecture makes it impossible. When the code goes open source, anyone can read it and verify the privacy claims for themselves. The strongest privacy proof isn't a marketing claim — it's the absence of the systems that would make a leak possible.</p>
+    <div class="checks">
+      <span class="check">No bank login</span>
+      <span class="check">No account required</span>
+      <span class="check">No tracking</span>
+      <span class="check">Open source soon</span>
+    </div>
+    <a href="privacy.html" class="btn-ghost" style="justify-content:center;">Read the privacy policy <span class="arrow">→</span></a>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 9 — COMPARISON
+     ============================================================ -->
+<section class="compare">
+  <div class="container">
+    <div class="compare-head reveal">
+      <div class="eyebrow" style="justify-content:center;display:inline-flex;"><span class="dot"></span>Why Catchly exists</div>
+      <h2 class="section-h">Most subscription trackers solve the wrong problem.</h2>
+      <p class="subhead">The category was built on a tradeoff nobody actually wanted. Catchly was built on the opposite one.</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card others reveal">
+        <span class="cc-corner muted">Others</span>
+        <h3>Others</h3>
+        <p class="desc">Bank-linked subscription trackers and the category they built</p>
+        <ul class="compare-list">
+          <li>Require your bank login through Plaid or similar</li>
+          <li>Store your financial data on their servers</li>
+          <li>Need an account, email, and password before you can even try the product</li>
+          <li>Take 30–60% of any savings they negotiate on your behalf</li>
+          <li>Send marketing emails you didn't ask for</li>
+          <li>Share data with "partners" buried deep in their privacy policy</li>
+          <li>Charge a recurring monthly fee just to show you what you're already paying for</li>
+          <li>Stop working the moment your bank changes their API</li>
+          <li>Can't detect a subscription until after it's hit your statement</li>
+          <li>Often harder to cancel than the subscriptions they're tracking</li>
+        </ul>
+      </div>
+
+      <div class="compare-card catchly reveal">
+        <span class="cc-corner brand">Catchly</span>
+        <h3>Catchly</h3>
+        <p class="desc">Privacy-first. Local-only. Built around the opposite tradeoff.</p>
+        <ul class="compare-list">
+          <li>Zero bank connection. Catchly never sees your account.</li>
+          <li>Your subscriptions stay in chrome.storage.local. Nothing uploads.</li>
+          <li>No account. No email. No password. Install and use in 30 seconds.</li>
+          <li>Free forever for the core product. Pro is a flat $4/month — no percentage cuts.</li>
+          <li>Zero marketing emails. The only email we'll send is the v1.0 launch announcement.</li>
+          <li>No third-party data sharing. No analytics. No telemetry. No SDKs.</li>
+          <li>Free to install. Free to use. The features that matter are not behind a paywall.</li>
+          <li>Catchly works at the browser layer — it doesn't depend on bank APIs.</li>
+          <li>Catches subscriptions the moment you sign up, before the first charge hits.</li>
+          <li>One-click uninstall. Your data goes with it. No retention, no recovery emails.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="compare-cta reveal">
+      <a href="#install" class="btn-primary large">Add to Chrome — Free <span style="font-weight:700;">→</span></a>
+      <p class="below-cta">No comparison chart can capture how it feels to install something honest. Try it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 10 — FINAL CTA
+     ============================================================ -->
+<section class="final-cta">
+  <div class="container final-cta-inner reveal">
+    <h2>Catchly powers smarter spending.</h2>
+    <p class="sub">Free to install. Free to use. Forever.</p>
+    <a href="#install" class="btn-primary large">Add to Chrome — Free</a>
+    <p class="tiny">For Chrome and Edge · No account required · Open source soon</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-row">
+      <div class="footer-left">
+        <span class="footer-mark">
+          <img src="appicon.png" alt="" width="24" height="24" decoding="async" />
+        </span>
+        <div class="meta">
+          <div>© 2026 Catchly</div>
+          <div class="tag">Built for people, not data brokers.</div>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="privacy.html">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Twitter</a>
+        <a href="#">GitHub</a>
+      </div>
+    </div>
+    <div class="footer-bottom">Made by an indie developer, one weekend at a time.</div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     TWEAKS PANEL (hidden until toolbar toggle)
+     ============================================================ -->
+<aside class="tweaks-panel" id="tweaksPanel" hidden>
+  <div class="tweaks-head">
+    <span class="title">Tweaks</span>
+    <button class="tweaks-close" id="tweaksClose" aria-label="Close tweaks panel" type="button">×</button>
+  </div>
+  <div class="tweaks-body">
+    <div class="tweak-section">Hero backdrop</div>
+    <div class="tweak-row" data-tweak-group="heroBackdrop">
+      <button class="tweak-btn" data-tweak="heroBackdrop" data-val="off" type="button">Off</button>
+      <button class="tweak-btn" data-tweak="heroBackdrop" data-val="motion" type="button">Motion</button>
+    </div>
+    <p class="tweak-hint">Motion mounts a soft Unicorn Studio canvas behind the hero. Disabled on mobile and for reduced-motion users.</p>
+
+    <div class="tweak-section">Hero visual</div>
+    <div class="tweak-row" data-tweak-group="visual">
+      <button class="tweak-btn" data-tweak="visual" data-val="webstore" type="button">Web Store</button>
+      <button class="tweak-btn" data-tweak="visual" data-val="popup" type="button">Popup</button>
+    </div>
+
+    <div class="tweak-section">Headline copy</div>
+    <div class="tweak-row" data-tweak-group="cycle">
+      <button class="tweak-btn" data-tweak="cycle" data-val="on" type="button">Cycling</button>
+      <button class="tweak-btn" data-tweak="cycle" data-val="off" type="button">Static</button>
+    </div>
+    <p class="tweak-hint">Rotates through Catchly's four core captures.</p>
+
+    <div class="tweak-section">Gmail section</div>
+    <div class="tweak-row" data-tweak-group="gmail">
+      <button class="tweak-btn" data-tweak="gmail" data-val="full" type="button">Full</button>
+      <button class="tweak-btn" data-tweak="gmail" data-val="compact" type="button">Compact</button>
+      <button class="tweak-btn" data-tweak="gmail" data-val="card" type="button">Card</button>
+    </div>
+    <p class="tweak-hint">Compact drops the long-form body; Card collapses to headline + form.</p>
+  </div>
+</aside>
+
+<script>
+// Mark JS as ready so reveals know they can hide themselves
+document.documentElement.classList.add('js');
+
+(function() {
+  // ===== Nav scroll =====
+  var nav = document.getElementById('nav');
+  function onScroll() {
+    if (window.scrollY > 8) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ===== Theme toggle =====
+  var toggle = document.getElementById('themeToggle');
+  function updateAria() {
+    var cur = document.documentElement.dataset.theme || 'light';
+    toggle.setAttribute('aria-label', cur === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+  }
+  updateAria();
+  toggle.addEventListener('click', function() {
+    var cur = document.documentElement.dataset.theme || 'light';
+    var next = cur === 'light' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('catchly_theme', next); } catch (e) {}
+    updateAria();
+  });
+
+  // ===== Reveal on scroll =====
+  var reveals = document.querySelectorAll('.reveal');
+  function revealAll() { reveals.forEach(function(el) { el.classList.add('in'); }); }
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(function(el) { io.observe(el); });
+    // Safety net: if anything is still hidden after 2.5s
+    // (no scroll, IO quirk, deep link to bottom), reveal it.
+    setTimeout(revealAll, 2500);
+  } else {
+    revealAll();
+  }
+
+  // ===== Waitlist form =====
+  var form = document.getElementById('waitlistForm');
+  var input = document.getElementById('waitlistEmail');
+  var btn = document.getElementById('waitlistBtn');
+  var err = document.getElementById('waitlistErr');
+
+  function showErr(msg) {
+    err.textContent = msg;
+    err.classList.add('show');
+  }
+  function hideErr() {
+    err.classList.remove('show');
+    err.textContent = '';
+  }
+  function validEmail(s) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    hideErr();
+    var email = (input.value || '').trim();
+    if (!validEmail(email)) {
+      showErr('Please enter a valid email address.');
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    fetch('https://catchly-waitlist.catchly-dev.workers.dev/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, source: 'landing', version: '0.1.0' })
+    }).then(function(r) {
+      if (!r.ok) throw new Error('Bad response');
+      return r.json().catch(function() { return { ok: true }; });
+    }).then(function() {
+      form.outerHTML = '<div class="success">You\u2019re on the list. We\u2019ll email when v1.0 launches.</div>';
+    }).catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Get early access';
+      showErr('Something went wrong. Please try again.');
+    });
+  });
+
+  // ============================================================
+  // Tweaks + headline cycling
+  // ============================================================
+  var TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "visual": "webstore",
+    "cycle": "on",
+    "gmail": "card",
+    "heroBackdrop": "off"
+  }/*EDITMODE-END*/;
+
+  var tweaks = Object.assign({}, TWEAK_DEFAULTS);
+
+  // Headline cycle — desktop & mobile-tight variants, matched char counts
+  var DESKTOP_PHRASES = [
+    "subscriptions you forgot.",
+    "price hikes nobody told you.",
+    "trials about to charge you.",
+    "shadow charges draining you.",
+    "renewals you stopped using."
+  ];
+  var MOBILE_PHRASES = [
+    "subs you forgot.",
+    "prices going up.",
+    "trials charging you.",
+    "shadow charges.",
+    "renewals you skip."
+  ];
+  var phrases = (window.matchMedia && window.matchMedia('(max-width: 640px)').matches) ? MOBILE_PHRASES : DESKTOP_PHRASES;
+  var swapEl = document.querySelector('.hero-swap');
+  var pIdx = 0;
+  var cycleTimer = null;
+  var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Lock min-width to the widest phrase so the headline never reflows mid-rotation
+  function measureWidestPhrase() {
+    if (!swapEl) return;
+    var probe = document.createElement('span');
+    var cs = window.getComputedStyle(swapEl);
+    probe.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;';
+    probe.style.fontFamily = cs.fontFamily;
+    probe.style.fontSize = cs.fontSize;
+    probe.style.fontWeight = cs.fontWeight;
+    probe.style.fontStyle = cs.fontStyle;
+    probe.style.letterSpacing = cs.letterSpacing;
+    probe.style.lineHeight = cs.lineHeight;
+    document.body.appendChild(probe);
+    var maxW = 0;
+    phrases.forEach(function(p) {
+      probe.textContent = p;
+      if (probe.offsetWidth > maxW) maxW = probe.offsetWidth;
+    });
+    probe.remove();
+    if (maxW) swapEl.style.setProperty('--swap-w', Math.ceil(maxW) + 'px');
+  }
+  // Measure now, after first paint, and after fonts actually load.
+  // (The shorthand `font` property is unreliable when font-size uses clamp().)
+  measureWidestPhrase();
+  requestAnimationFrame(measureWidestPhrase);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(measureWidestPhrase);
+  }
+  setTimeout(measureWidestPhrase, 1500);
+  window.addEventListener('resize', measureWidestPhrase, { passive: true });
+
+  function startCycle() {
+    if (cycleTimer || !swapEl || prefersReduced) return;
+    cycleTimer = setInterval(function() {
+      swapEl.classList.add('leaving');
+      setTimeout(function() {
+        pIdx = (pIdx + 1) % phrases.length;
+        swapEl.textContent = phrases[pIdx];
+        swapEl.classList.remove('leaving');
+        swapEl.classList.add('entering');
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            swapEl.classList.remove('entering');
+          });
+        });
+      }, 220);
+    }, 3400);
+  }
+  function stopCycle() {
+    if (cycleTimer) { clearInterval(cycleTimer); cycleTimer = null; }
+    if (swapEl) {
+      swapEl.classList.remove('leaving','entering');
+      swapEl.textContent = phrases[0];
+      pIdx = 0;
+    }
+  }
+
+  // Initial copy: replace the build-time placeholder with the first phrase from the active set
+  if (swapEl) swapEl.textContent = phrases[0];
+
+  function applyHeroBackdrop(state) {
+    var hero = document.querySelector('.hero');
+    if (!hero) return;
+    var bd = hero.querySelector('.hero-backdrop');
+    if (state === 'motion') {
+      if (!bd) {
+        bd = document.createElement('div');
+        bd.className = 'hero-backdrop';
+        bd.setAttribute('aria-hidden', 'true');
+        var inner = document.createElement('div');
+        inner.setAttribute('data-us-project', 'p7Ff6pfTrb5Gs59C7nLC');
+        bd.appendChild(inner);
+        // Mount as the first child so it sits behind all hero content
+        hero.insertBefore(bd, hero.firstChild);
+      }
+      bd.style.display = '';
+      // Lazy-load UnicornStudio on first activation; re-init if already loaded
+      if (!window.UnicornStudio) {
+        window.UnicornStudio = { isInitialized: false };
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js';
+        s.async = true;
+        s.onload = function() {
+          try {
+            if (window.UnicornStudio && window.UnicornStudio.init && !window.UnicornStudio.isInitialized) {
+              window.UnicornStudio.init();
+              window.UnicornStudio.isInitialized = true;
+            }
+          } catch (e) {}
+        };
+        (document.head || document.body).appendChild(s);
+      } else if (window.UnicornStudio.init) {
+        try { window.UnicornStudio.init(); window.UnicornStudio.isInitialized = true; } catch (e) {}
+      }
+    } else {
+      if (bd) bd.style.display = 'none';
+    }
+  }
+
+  function applyTweaks() {
+    var visualWrap = document.querySelector('.hero-visual-wrap');
+    if (visualWrap) visualWrap.setAttribute('data-visual', tweaks.visual);
+
+    if (tweaks.cycle === 'on') startCycle();
+    else stopCycle();
+
+    var gmail = document.querySelector('.gmail');
+    if (gmail) gmail.setAttribute('data-layout', tweaks.gmail);
+
+    applyHeroBackdrop(tweaks.heroBackdrop);
+
+    // Sync UI active state
+    document.querySelectorAll('.tweak-btn').forEach(function(btn) {
+      var k = btn.dataset.tweak;
+      btn.classList.toggle('active', tweaks[k] === btn.dataset.val);
+    });
+  }
+
+  function setTweak(key, val) {
+    tweaks[key] = val;
+    applyTweaks();
+    try {
+      var edit = {};
+      edit[key] = val;
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: edit }, '*');
+    } catch (e) {}
+  }
+
+  document.querySelectorAll('.tweak-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      setTweak(btn.dataset.tweak, btn.dataset.val);
+    });
+  });
+
+  // Host protocol wiring
+  var tweaksPanel = document.getElementById('tweaksPanel');
+  var tweaksCloseBtn = document.getElementById('tweaksClose');
+
+  window.addEventListener('message', function(e) {
+    if (!e.data || typeof e.data !== 'object') return;
+    if (e.data.type === '__activate_edit_mode') tweaksPanel.hidden = false;
+    if (e.data.type === '__deactivate_edit_mode') tweaksPanel.hidden = true;
+  });
+  tweaksCloseBtn.addEventListener('click', function() {
+    tweaksPanel.hidden = true;
+    try { window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); } catch (e) {}
+  });
+  try { window.parent.postMessage({ type: '__edit_mode_available' }, '*'); } catch (e) {}
+
+  applyTweaks();
+})();
+</script>
+
+</body>
+</html>

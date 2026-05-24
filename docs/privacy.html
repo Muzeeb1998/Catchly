@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy Policy — Catchly</title>
+<meta name="description" content="How Catchly handles your data. We don't see your subscriptions. Read the full privacy policy." />
+<link rel="canonical" href="https://getcatchly.com/privacy" />
+<meta property="og:title" content="Privacy Policy — Catchly" />
+<meta property="og:description" content="How Catchly handles your data. We don't see your subscriptions." />
+<meta property="og:url" content="https://getcatchly.com/privacy" />
+<meta property="og:image" content="https://getcatchly.com/og.png" />
+<meta property="og:type" content="article" />
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2315110C'/><path d='M9 9v14M13 9h-4M13 23h-4M23 9v14M19 9h4M19 23h4' stroke='%23FAF7F2' stroke-width='2' stroke-linecap='round'/><circle cx='16' cy='16' r='3' fill='%23F5D547'/></svg>" />
+
+<script>
+(function() {
+  try {
+    var stored = localStorage.getItem('catchly_theme');
+    if (stored) {
+      document.documentElement.dataset.theme = stored;
+    } else {
+      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = systemDark ? 'dark' : 'light';
+    }
+  } catch (e) {}
+})();
+</script>
+
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" />
+
+<style>
+/* ============================================================
+   Catchly — Privacy Policy
+   ============================================================ */
+:root[data-theme="light"] {
+  --canvas: #FAF7F2;
+  --canvas-2: #FFFFFF;
+  --canvas-3: #F2EDE3;
+  --ink: #15110C;
+  --ink-2: #3A332A;
+  --muted: #6E6557;
+  --rule: #E5DFD3;
+  --rule-strong: #C9C0AE;
+  --accent: #F5D547;
+  --accent-hover: #E6C320;
+  --accent-ink: #15110C;
+  --accent-soft: #FFFCE0;
+}
+:root[data-theme="dark"] {
+  --canvas: #0F0D0A;
+  --canvas-2: #1A1612;
+  --canvas-3: #252019;
+  --ink: #FAF7F2;
+  --ink-2: #C9C0AE;
+  --muted: #8A8275;
+  --rule: #2E2820;
+  --rule-strong: #3F3829;
+  --accent: #F5D547;
+  --accent-hover: #FFDC1E;
+  --accent-ink: #0F0D0A;
+  --accent-soft: #2A2515;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+html, body { margin: 0; padding: 0; }
+html {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: 'General Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+  transition: background-color .3s ease, color .3s ease;
+}
+::selection { background: var(--accent); color: var(--accent-ink); }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* Skip link */
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  z-index: 1000;
+}
+.skip:focus { left: 12px; }
+
+/* ============================================================
+   Nav
+   ============================================================ */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color .25s ease, border-color .25s ease, backdrop-filter .25s ease;
+}
+.nav.scrolled {
+  background: color-mix(in oklab, var(--canvas) 80%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom-color: var(--rule);
+}
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.brand-mark {
+  width: 38px; height: 38px;
+  background: var(--ink);
+  color: var(--canvas);
+  border-radius: 10px;
+  display: inline-grid; place-items: center;
+}
+.brand-mark svg { display: block; }
+.nav-right { display: inline-flex; align-items: center; gap: 6px; }
+.theme-toggle {
+  width: 38px; height: 38px;
+  display: inline-grid; place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-2);
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+  margin: 0 6px;
+}
+.theme-toggle:hover { background: var(--canvas-3); color: var(--ink); border-color: var(--rule-strong); }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 9px 16px;
+  border-radius: 9px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: background-color .2s ease, transform .15s ease;
+}
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+/* ============================================================
+   Layout — two column on desktop
+   ============================================================ */
+.shell {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  gap: 0;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0;
+  align-items: flex-start;
+}
+@media (min-width: 1280px) {
+  .shell {
+    max-width: 1320px;
+    grid-template-columns: 264px minmax(0, 1fr) 240px;
+  }
+}
+
+.toc {
+  position: sticky;
+  top: 72px;
+  align-self: start;
+  width: 100%;
+  height: calc(100vh - 80px);
+  padding: 36px 24px 24px 28px;
+  border-right: 1px solid var(--rule);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) transparent;
+}
+.toc::-webkit-scrollbar { width: 6px; }
+.toc::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+.toc::-webkit-scrollbar-thumb:hover { background: var(--rule-strong); }
+.toc-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-left: 14px;
+}
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.toc-list a {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  padding: 6px 14px;
+  border-left: 2px solid transparent;
+  border-radius: 0 4px 4px 0;
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease;
+  line-height: 1.4;
+}
+.toc-list a:hover { color: var(--ink); }
+.toc-list a.is-active {
+  color: var(--ink);
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+:root[data-theme="dark"] .toc-list a.is-active {
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+}
+.toc-list .toc-sub a {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--muted);
+  padding-left: 26px;
+}
+.toc-list .toc-sub a:hover { color: var(--ink-2); }
+.toc-list .toc-sub a.is-active { color: var(--ink); font-weight: 500; }
+
+.toc-contact {
+  margin-top: auto;
+  padding: 16px 14px 8px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.toc-contact .lbl {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.toc-contact .mail {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  word-break: break-all;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1px;
+}
+.toc-contact .mail:hover { border-bottom-color: var(--accent); }
+.toc-contact .note {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Mobile dropdown TOC */
+.mobile-toc {
+  display: none;
+}
+
+/* ============================================================
+   Main content
+   ============================================================ */
+.main {
+  max-width: 760px;
+  padding: 56px 48px 80px;
+  justify-self: center;
+  width: 100%;
+}
+@media (min-width: 1280px) {
+  .main {
+    justify-self: start;
+    padding: 56px 56px 80px 40px;
+  }
+}
+
+/* ============================================================
+   Right rail (XL only) — reading progress, pull-quote, actions
+   ============================================================ */
+.rail {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: sticky;
+    top: 88px;
+    align-self: start;
+    padding: 56px 24px 24px 8px;
+    max-height: calc(100vh - 96px);
+    overflow: hidden;
+  }
+}
+.rail-card {
+  background: var(--canvas-2);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 18px 18px 16px;
+}
+.rail-lbl {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+.rail-progress {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.rail-progress .pct {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.rail-progress .of {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.rail-bar {
+  height: 3px;
+  background: var(--canvas-3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.rail-bar .fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .2s ease;
+}
+.rail-section {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+.rail-section .name {
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  display: block;
+  margin-top: 2px;
+}
+
+.rail-pull {
+  background:
+    linear-gradient(180deg, var(--accent-soft) 0%, var(--canvas-2) 70%);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  padding: 18px 18px 16px;
+}
+:root[data-theme="dark"] .rail-pull {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 8%, var(--canvas-2)) 0%, var(--canvas-2) 70%);
+}
+.rail-pull blockquote {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.rail-pull cite {
+  display: block;
+  margin-top: 10px;
+  font-size: 11.5px;
+  font-style: normal;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.rail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 8px 8px;
+}
+.rail-act {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  transition: background-color .15s ease, color .15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rail-act:hover { background: var(--canvas-3); color: var(--ink); }
+.rail-act svg { color: var(--muted); flex-shrink: 0; }
+.rail-act:hover svg { color: var(--accent-hover); }
+.rail-act .copy-state {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent-hover);
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.rail-act .copy-state.show { opacity: 1; }
+
+.rail-updated {
+  font-size: 11.5px;
+  color: var(--muted);
+  text-align: center;
+  padding-top: 4px;
+  border-top: 1px solid var(--rule);
+  margin-top: 4px;
+  padding-top: 12px;
+  letter-spacing: -0.005em;
+}
+.rail-updated b { color: var(--ink-2); font-weight: 600; }
+
+.legal-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.page-title {
+  font-size: clamp(40px, 4.5vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.06;
+  color: var(--ink);
+  margin: 0 0 18px;
+}
+.dateline {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0 0 28px;
+}
+.dateline strong { color: var(--ink-2); font-weight: 600; }
+.page-rule {
+  border: 0;
+  height: 1px;
+  background: var(--rule);
+  margin: 0 0 40px;
+}
+
+/* At a glance */
+.glance {
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 30px 34px 32px;
+  margin: 0 0 24px;
+  color: var(--ink);
+}
+:root[data-theme="dark"] .glance {
+  background: color-mix(in oklab, var(--accent) 7%, var(--canvas-2));
+}
+.glance-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  margin: 0 0 12px;
+}
+:root[data-theme="dark"] .glance-eyebrow { color: var(--ink); }
+.glance > p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0 0 14px;
+}
+.glance ul {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.glance li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+:root[data-theme="dark"] .glance li { color: var(--ink); }
+.glance li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.glance-close {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--ink-2);
+  margin: 24px 0 0;
+}
+:root[data-theme="dark"] .glance-close { color: var(--ink-2); }
+
+/* Section dividers */
+.sep {
+  border: 0;
+  height: 1px;
+  background: var(--rule);
+  margin: 48px 0 0;
+}
+
+/* Headings */
+h2.s-title {
+  font-size: clamp(28px, 3vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 56px 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  position: relative;
+}
+.s-title .hash {
+  opacity: 0;
+  font-size: 0.7em;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  margin-left: 6px;
+  transition: opacity .15s ease;
+}
+.s-title:hover .hash, .s-title:focus-within .hash { opacity: .6; }
+.s-title .hash:hover { color: var(--accent); opacity: 1; }
+
+.s-rule {
+  border: 0;
+  height: 1px;
+  background: var(--rule);
+  margin: 18px 0 22px;
+}
+
+h3.sub-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 36px 0 14px;
+}
+
+.main p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink-2);
+  margin: 0 0 18px;
+}
+.main p strong { color: var(--ink); font-weight: 600; }
+
+.main ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.main ul li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+.main ul li::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 11px;
+  width: 8px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.main ul li strong { color: var(--ink); font-weight: 600; }
+
+.main ol {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 22px;
+  counter-reset: ol-counter;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.main ol > li {
+  position: relative;
+  padding-left: 28px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--ink-2);
+  counter-increment: ol-counter;
+}
+.main ol > li::before {
+  content: counter(ol-counter) '.';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--accent-hover);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-theme="dark"] .main ol > li::before { color: var(--accent); }
+
+/* Inline code */
+.main code, code.k {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13.5px;
+  background: var(--canvas-3);
+  color: var(--ink);
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+  letter-spacing: -0.005em;
+}
+
+/* Legal uppercase block */
+.legalese {
+  background: var(--canvas-3);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 22px 26px;
+  margin: 0 0 22px;
+}
+.legalese p {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.65;
+  color: var(--ink-2);
+  margin: 0 0 14px;
+}
+.legalese p:last-child { margin-bottom: 0; }
+.legalese p strong { color: var(--ink); }
+
+/* Closing italic note */
+.closing-note {
+  text-align: center;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 80px auto 0;
+  max-width: 540px;
+}
+.closing-rule {
+  border: 0;
+  height: 1px;
+  background: var(--rule);
+  width: 60%;
+  margin: 28px auto 40px;
+}
+
+/* Subsection inline labels (e.g., "**Subscription records you create.**") */
+.lead {
+  display: inline;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  border-top: 1px solid var(--rule);
+  padding: 40px 0 56px;
+  margin-top: 24px;
+}
+.footer-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.footer-left { display: inline-flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ink-2); }
+.footer-mark {
+  width: 24px; height: 24px;
+  background: var(--ink);
+  color: var(--canvas);
+  border-radius: 6px;
+  display: inline-grid; place-items: center;
+}
+.footer-links { display: inline-flex; gap: 22px; }
+.footer-links a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-2);
+  transition: color .15s ease;
+}
+.footer-links a:hover { color: var(--ink); }
+.footer-tail {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .shell { grid-template-columns: 1fr; }
+  .toc {
+    display: none;
+  }
+  .mobile-toc {
+    display: block;
+    position: sticky;
+    top: 64px;
+    z-index: 50;
+    background: color-mix(in oklab, var(--canvas) 90%, transparent);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .mobile-toc-btn {
+    width: 100%;
+    text-align: left;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+  }
+  .mobile-toc-btn::after {
+    content: '';
+    width: 10px; height: 10px;
+    border-right: 1.5px solid var(--ink-2);
+    border-bottom: 1.5px solid var(--ink-2);
+    transform: rotate(45deg);
+    margin-left: 8px;
+    transition: transform .2s ease;
+  }
+  .mobile-toc.open .mobile-toc-btn::after { transform: rotate(-135deg); margin-top: 4px; }
+  .mobile-toc-panel {
+    display: none;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 0 24px 16px;
+    border-top: 1px solid var(--rule);
+  }
+  .mobile-toc.open .mobile-toc-panel { display: block; }
+  .mobile-toc-panel ul {
+    list-style: none;
+    padding: 12px 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .mobile-toc-panel a {
+    display: block;
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--ink-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .mobile-toc-panel a.is-active { color: var(--ink); font-weight: 600; }
+  .mobile-toc-panel .toc-sub a { padding-left: 16px; font-size: 13px; color: var(--muted); }
+
+  .main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 32px 64px;
+  }
+}
+@media (max-width: 640px) {
+  .nav-inner { padding: 12px 16px; }
+  .brand { font-size: 18px; gap: 10px; }
+  .brand-mark { width: 34px; height: 34px; }
+  .main { padding: 32px 18px 56px; }
+  .glance { padding: 22px 22px 24px; }
+  h2.s-title { font-size: 24px; margin-top: 44px; }
+  h3.sub-title { font-size: 18px; }
+  .legalese { padding: 18px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+/* ============================================================
+   Print styles
+   ============================================================ */
+@media print {
+  :root, :root[data-theme="dark"] {
+    --canvas: #FFFFFF;
+    --canvas-2: #FFFFFF;
+    --canvas-3: #F5F5F5;
+    --ink: #000000;
+    --ink-2: #1A1A1A;
+    --muted: #555;
+    --rule: #CCCCCC;
+    --rule-strong: #999999;
+    --accent: #000000;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #F5F5F5;
+  }
+  html, body { background: #fff !important; color: #000 !important; }
+  .nav, .toc, .mobile-toc, .rail, .footer, .skip, .s-title .hash { display: none !important; }
+  .shell { display: block; max-width: none; }
+  .main { max-width: none; padding: 0 0 24px; }
+  body { font-size: 11pt; }
+  h1, h2, h3 { color: #000 !important; page-break-after: avoid; }
+  p, li { color: #1a1a1a !important; }
+  .glance {
+    background: #F5F5F5 !important;
+    border-left: 3px solid #000 !important;
+    color: #000 !important;
+  }
+  .legalese { background: #F5F5F5 !important; border: 1px solid #999 !important; }
+  a { color: #000; text-decoration: underline; }
+  a[href^="http"]:after, a[href^="mailto"]:after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #555;
+  }
+  .s-title:hover .hash { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<a href="#main" class="skip">Skip to main content</a>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="brand" aria-label="Catchly home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
+          <path d="M4 3v12M6 3H3M6 15H3M14 3v12M12 3h3M12 15h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="9" cy="9" r="2.4" fill="#F5D547"/>
+        </svg>
+      </span>
+      <span>catchly</span>
+    </a>
+    <div class="nav-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode" type="button">
+        <svg class="icon-moon" width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M13.5 9.5A5.5 5.5 0 1 1 6.5 2.5a4.5 4.5 0 0 0 7 7Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+        <svg class="icon-sun" width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <a href="index.html#install" class="btn-primary">Add to Chrome — Free</a>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile collapsible TOC -->
+<div class="mobile-toc" id="mobileToc">
+  <button class="mobile-toc-btn" id="mobileTocBtn" aria-expanded="false" aria-controls="mobileTocPanel">
+    <span>Contents</span>
+  </button>
+  <div class="mobile-toc-panel" id="mobileTocPanel">
+    <ul>
+      <li><a href="#glance">At a glance</a></li>
+      <li><a href="#about">1. About Catchly</a></li>
+      <li><a href="#info">2. Information we collect</a></li>
+      <li class="toc-sub"><a href="#info-local">2.1 Stored locally</a></li>
+      <li class="toc-sub"><a href="#info-waitlist">2.2 Waitlist</a></li>
+      <li class="toc-sub"><a href="#info-notcollected">2.3 Not collected</a></li>
+      <li class="toc-sub"><a href="#info-sold">2.4 Sold or shared</a></li>
+      <li><a href="#upcoming">3. Upcoming features</a></li>
+      <li><a href="#permissions">4. Browser permissions</a></li>
+      <li><a href="#cookies">5. Cookies</a></li>
+      <li><a href="#handle">6. How we handle data</a></li>
+      <li><a href="#rights">7. Your rights</a></li>
+      <li><a href="#children">8. Children's privacy</a></li>
+      <li><a href="#security">9. Data security</a></li>
+      <li><a href="#transfers">10. International transfers</a></li>
+      <li><a href="#changes">11. Changes</a></li>
+      <li><a href="#liability">12. Liability</a></li>
+      <li><a href="#contact">13. Contact</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================
+     SHELL — sticky TOC + main content
+     ============================================================ -->
+<div class="shell">
+
+  <!-- TOC (desktop) -->
+  <aside class="toc" aria-label="On this page">
+    <div class="toc-eyebrow">On this page</div>
+    <ul class="toc-list" id="tocList">
+      <li><a href="#glance">At a glance</a></li>
+      <li><a href="#about">1. About Catchly</a></li>
+      <li><a href="#info">2. Information we collect</a>
+        <ul class="toc-sub">
+          <li><a href="#info-local">2.1 Stored locally</a></li>
+          <li><a href="#info-waitlist">2.2 Waitlist</a></li>
+          <li><a href="#info-notcollected">2.3 Not collected</a></li>
+          <li><a href="#info-sold">2.4 Sold or shared</a></li>
+        </ul>
+      </li>
+      <li><a href="#upcoming">3. Upcoming features</a></li>
+      <li><a href="#permissions">4. Browser permissions</a></li>
+      <li><a href="#cookies">5. Cookies</a></li>
+      <li><a href="#handle">6. How we handle data</a></li>
+      <li><a href="#rights">7. Your rights</a></li>
+      <li><a href="#children">8. Children's privacy</a></li>
+      <li><a href="#security">9. Data security</a></li>
+      <li><a href="#transfers">10. International transfers</a></li>
+      <li><a href="#changes">11. Changes</a></li>
+      <li><a href="#liability">12. Liability</a></li>
+      <li><a href="#contact">13. Contact</a></li>
+    </ul>
+    <div class="toc-contact">
+      <div class="lbl">Questions?</div>
+      <a class="mail" href="mailto:privacy@getcatchly.com">privacy@getcatchly.com</a>
+      <span class="note">We respond within 14 days.</span>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       MAIN
+       ============================================================ -->
+  <main class="main" id="main">
+
+    <div class="legal-eyebrow">Legal</div>
+    <h1 class="page-title">Privacy Policy</h1>
+    <p class="dateline">
+      <strong>Effective date:</strong> May 24, 2026<br/>
+      <strong>Last updated:</strong> May 24, 2026
+    </p>
+    <hr class="page-rule" />
+
+    <!-- AT A GLANCE -->
+    <section class="glance" id="glance" aria-labelledby="glance-title">
+      <div class="glance-eyebrow" id="glance-title">At a glance</div>
+      <p>Catchly is a browser extension that helps you keep track of your subscriptions. It was built around a simple architectural decision: we do not see your data.</p>
+      <ul>
+        <li>Your subscription information is stored locally in your browser, in <code class="k">chrome.storage.local</code> on your device. It never leaves your computer.</li>
+        <li>There is no account system. You do not create a login, provide your name, or set a password.</li>
+        <li>There is no backend server that holds your subscription information. We could not look up your subscriptions if we wanted to, because the infrastructure does not exist.</li>
+        <li>The only personal information we collect is your email address — and only if you voluntarily join our waitlist for an upcoming feature.</li>
+        <li>We do not use third-party analytics, advertising trackers, session-replay tools, or any tools that track your behavior. We do not share or sell your data.</li>
+      </ul>
+    </section>
+    <p class="glance-close">The full policy below provides the specifics of what we collect, what we do not, your rights, and how to contact us.</p>
+
+    <!-- 1. ABOUT -->
+    <h2 class="s-title" id="about">1. About Catchly <a href="#about" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p>Catchly ("we," "us," "our") is a browser extension product. The Catchly service includes the Chrome extension, the website at getcatchly.com, and any related services we operate.</p>
+    <p>Catchly is developed and operated by an independent software developer based in India. The product is offered globally, with a primary user base in the United States.</p>
+    <p>For all privacy-related contact:</p>
+    <p><strong>Email:</strong> <a href="mailto:privacy@getcatchly.com" style="border-bottom:1px solid var(--rule-strong);">privacy@getcatchly.com</a></p>
+    <p>We aim to respond to privacy inquiries within 14 days. If you do not receive a response, please check your spam folder and try again.</p>
+
+    <!-- 2. INFORMATION WE COLLECT -->
+    <h2 class="s-title" id="info">2. Information we collect <a href="#info" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p>This is the most important section of this policy. We are specific because specificity is the point.</p>
+
+    <h3 class="sub-title" id="info-local">2.1 Information stored locally on your device</h3>
+    <p>The Catchly extension stores the following information in <code class="k">chrome.storage.local</code> on your device. This information does not leave your browser. We do not have access to it.</p>
+    <p><span class="lead">Subscription records you create.</span> When you add a subscription manually, or accept one detected by the extension, we save a record containing: the service name, the amount and currency, the billing cycle, the next renewal date, the date you started the subscription, the category you assign, any notes you write, and the source URL where the subscription was detected (if applicable).</p>
+    <p><span class="lead">Usage signals for shadow-charge detection.</span> To warn you about renewals on services you have stopped using, the extension records timestamps of when you last visited each tracked service. These timestamps stay on your device.</p>
+    <p><span class="lead">Settings and preferences.</span> Your reminder schedule, default currency, theme preference, and notification settings.</p>
+    <p><span class="lead">Event log.</span> A short rolling log of events the extension has handled, such as price changes detected or trials approaching their end. Capped at 500 entries.</p>
+    <p><span class="lead">Pending captures.</span> When the extension detects a possible subscription, the detection is held briefly while you decide whether to confirm or dismiss it.</p>
+    <p>All of the above is stored locally and is not transmitted to us or any third party.</p>
+
+    <h3 class="sub-title" id="info-waitlist">2.2 Information we collect through the waitlist</h3>
+    <p>If you voluntarily submit your email address through the waitlist signup form, we collect:</p>
+    <ul>
+      <li>Your email address</li>
+      <li>A short label indicating which surface you signed up from (such as "welcome screen," "settings," or "landing page")</li>
+      <li>The version of the extension you were using at signup, if applicable</li>
+      <li>The timestamp of your signup</li>
+    </ul>
+    <p>This information is transmitted to and stored in Cloudflare Workers KV, a key-value storage service operated by Cloudflare, Inc.</p>
+    <p>We use this information solely to notify you when the relevant upcoming feature launches. After we send that notification, we will not contact you further unless you separately opt in to additional communications.</p>
+    <p>You may request deletion of your waitlist record at any time by emailing <a href="mailto:privacy@getcatchly.com">privacy@getcatchly.com</a> with the subject "Delete my waitlist signup" and the email address you submitted.</p>
+
+    <h3 class="sub-title" id="info-notcollected">2.3 Information we do not collect</h3>
+    <p>We want to be specific about what is absent, because for a privacy-focused product, the absences matter as much as the presences.</p>
+    <ul>
+      <li><strong>Financial information.</strong> We do not collect or have access to bank accounts, credit card numbers, debit cards, or any financial credentials. The extension does not request this information and has no infrastructure to handle it.</li>
+      <li><strong>Account information.</strong> There is no Catchly account system. We do not collect names, passwords, dates of birth, or any identifiers required to create or log into an account.</li>
+      <li><strong>Browsing history.</strong> The extension does not record, store, or transmit the URLs you visit or the pages you browse. The content script briefly examines page-level signals to determine whether a page appears to be a subscription sign-up flow; it does not maintain a record of which pages you visit.</li>
+      <li><strong>Application analytics.</strong> We do not use Google Analytics, Plausible, Fathom, Mixpanel, Amplitude, or any similar analytics platform.</li>
+      <li><strong>Advertising trackers.</strong> We do not use advertising networks, tracking pixels, conversion tags, or remarketing technology.</li>
+      <li><strong>Session-replay or behavioral analytics.</strong> We do not use Hotjar, FullStory, LogRocket, or any tool that records user sessions or interactions.</li>
+      <li><strong>Error reporting (currently).</strong> We do not currently use any error-reporting or crash-tracking service such as Sentry, Bugsnag, or Rollbar. If we ever add such a service in the future, it will be opt-in only, will require your explicit consent through an in-app prompt, and will transmit only technical diagnostic information (such as stack traces, browser version, and extension version) — never subscription data, email content, or personal information.</li>
+      <li><strong>Network-layer information from our application.</strong> Our Cloudflare Worker code does not access, read, or persist IP addresses, user-agent strings, or other network metadata. However, as is standard for any internet service, Cloudflare's edge infrastructure logs certain network metadata, including IP addresses, for security, routing, and abuse prevention purposes. These logs are governed by Cloudflare's data practices, not ours. See Cloudflare's privacy policy at cloudflare.com/privacypolicy for their handling. We do not query, use, or analyze these logs as a matter of policy.</li>
+    </ul>
+
+    <h3 class="sub-title" id="info-sold">2.4 Information sold or shared</h3>
+    <p>We do not sell or share your personal information for any purpose, including for cross-context behavioral advertising as that term is defined under the California Privacy Rights Act (CPRA).</p>
+    <p>We have not sold or shared personal information in the past twelve months.</p>
+
+    <!-- 3. UPCOMING -->
+    <h2 class="s-title" id="upcoming">3. Upcoming features <a href="#upcoming" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p>From time to time we develop new features that may involve additional data processing. Where any future feature requires processing of personal information beyond what is described in this policy, we will:</p>
+    <ol>
+      <li>Publish a complete and specific disclosure of how the feature works before the feature is released.</li>
+      <li>Update this policy to reflect any new data practices.</li>
+      <li>Obtain your explicit consent before processing any new category of personal information about you.</li>
+    </ol>
+    <p>We do not enable features that change our data handling without first notifying you and obtaining the consent required by applicable law.</p>
+
+    <!-- 4. PERMISSIONS -->
+    <h2 class="s-title" id="permissions">4. Browser extension permissions <a href="#permissions" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p>Browser extensions must declare permissions in their <code class="k">manifest.json</code> file. The Chrome Web Store displays these permissions when you install the extension. Here is what each one does and why we request it:</p>
+    <p><code class="k">storage</code> — Saves your subscription data, settings, and preferences to your device using <code class="k">chrome.storage.local</code>. The extension cannot function without this permission.</p>
+    <p><code class="k">alarms</code> — Schedules renewal reminders via Chrome's alarm system. Required for the notification timing logic.</p>
+    <p><code class="k">notifications</code> — Displays desktop notifications when a renewal is approaching, a trial is ending, or a shadow-charge warning is triggered.</p>
+    <p><code class="k">tabs</code> — Opens new tabs when you click a notification or a cancellation link from the extension popup.</p>
+    <p><strong>Host permissions for all URLs</strong> — Allows our content script to run on any webpage you visit.</p>
+    <p>The content script's only purpose is subscription detection. When you visit a webpage, the script briefly examines signals such as the URL, page title, and a small portion of visible text to determine whether the page appears to be a subscription sign-up or checkout flow for a service we recognize. This examination happens entirely within your browser. If the page does not appear to be a subscription flow, the script takes no action.</p>
+    <p>The content script does not:</p>
+    <ul>
+      <li>Read or transmit the contents of forms you fill out</li>
+      <li>Read or transmit passwords, payment information, or authentication credentials</li>
+      <li>Maintain a record of pages you visit</li>
+      <li>Transmit page content, URLs, or browsing patterns to any external server</li>
+      <li>Track you across websites</li>
+    </ul>
+    <p>We use broad host permissions because new subscription services launch constantly, and a fixed allow-list of supported sites would miss subscriptions on services we have not yet added. A future version of the extension may include a setting that allows you to disable the content script entirely while keeping the rest of the extension functional.</p>
+
+    <!-- 5. COOKIES -->
+    <h2 class="s-title" id="cookies">5. Cookies and tracking technologies <a href="#cookies" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p><strong>The Catchly extension</strong> does not use cookies. The extension does not create persistent identifiers that allow us to recognize you across sessions or devices.</p>
+    <p><strong>The Catchly website (getcatchly.com)</strong> does not use third-party tracking cookies, Google Analytics, Facebook Pixel, or advertising-network tracking technology. We use browser <code class="k">localStorage</code> only to remember your theme preference (light or dark mode). This use is considered strictly necessary for the website to function as designed and does not require separate consent under the EU ePrivacy Directive or comparable regulations.</p>
+    <p>If we add server-side analytics in the future, we will use a privacy-preserving solution that does not track individual visitors (such as Plausible, Fathom, or Cloudflare's privacy-focused analytics) and we will update this policy to reflect that change.</p>
+
+    <!-- 6. HOW WE HANDLE -->
+    <h2 class="s-title" id="handle">6. How we handle the data we do collect <a href="#handle" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p>The only personal information we collect is the waitlist email addresses described in Section 2.2. Here is how that information is handled:</p>
+    <p><span class="lead">Service provider.</span> Waitlist emails are stored in Cloudflare Workers KV, operated by Cloudflare, Inc. Cloudflare acts as a service provider (as that term is used under the CCPA/CPRA) and a data processor (as that term is used under GDPR) for the limited purpose of operating our waitlist endpoint. Cloudflare's processing is governed by Cloudflare's standard data processing terms, which restrict them from using your information for any purpose other than providing the requested service.</p>
+    <p><span class="lead">Storage location.</span> Cloudflare operates a globally distributed infrastructure. Your email address may be stored or processed in data centers located in the United States, Europe, or other countries where Cloudflare operates. Cloudflare's privacy practices are documented at cloudflare.com/privacypolicy.</p>
+    <p><span class="lead">For users in the European Economic Area, the United Kingdom, or Switzerland.</span> International transfers of your email address to Cloudflare are governed by Cloudflare's data transfer arrangements, including Standard Contractual Clauses approved by the European Commission, where applicable. By submitting your email to our waitlist, you consent to this transfer.</p>
+    <p><span class="lead">Encryption.</span> Data is encrypted in transit (via TLS) and at rest (via Cloudflare's standard infrastructure encryption).</p>
+    <p><span class="lead">Access.</span> Only the Catchly developer has administrative access to the waitlist data. No third parties access the data.</p>
+    <p><span class="lead">Retention.</span> Waitlist emails are retained until the relevant upcoming feature launches and the launch notification has been sent. After that, emails are retained for an additional 90 days, then deleted.</p>
+    <p><span class="lead">Maximum retention.</span> Regardless of launch status, waitlist emails will be deleted no later than <strong>24 months from the date of collection</strong>.</p>
+    <p><span class="lead">Deletion requests.</span> Earlier deletion may be requested at any time by emailing <a href="mailto:privacy@getcatchly.com">privacy@getcatchly.com</a>.</p>
+
+    <!-- 7. RIGHTS -->
+    <h2 class="s-title" id="rights">7. Your privacy rights <a href="#rights" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+
+    <h3 class="sub-title">For US residents — California (CCPA / CPRA)</h3>
+    <p>If you are a California resident, you have the following rights under the California Consumer Privacy Act, as amended by the California Privacy Rights Act:</p>
+    <ul>
+      <li><strong>Right to know.</strong> You may request information about the categories of personal information we have collected, the sources of that information, the purposes for collection, the categories of third parties (if any) with whom we share information, and the specific pieces of personal information we hold about you.</li>
+      <li><strong>Right to delete.</strong> You may request deletion of personal information we have collected from you, subject to certain legal exceptions.</li>
+      <li><strong>Right to correct.</strong> You may request correction of inaccurate personal information we hold about you.</li>
+      <li><strong>Right to opt out of sale or sharing.</strong> We do not sell or share personal information. There is nothing to opt out of, but this right exists if our practices change.</li>
+      <li><strong>Right to limit use of sensitive personal information.</strong> We do not collect sensitive personal information as that term is defined under the CPRA.</li>
+      <li><strong>Right to non-discrimination.</strong> We will not discriminate against you for exercising any of these rights.</li>
+    </ul>
+    <p>To exercise your California rights, email <a href="mailto:privacy@getcatchly.com">privacy@getcatchly.com</a>. We will verify your request and respond within 45 days, with one possible 45-day extension if reasonably necessary.</p>
+    <p><strong>California Shine the Light disclosure.</strong> California residents may request information about disclosures of personal information to third parties for direct marketing purposes. We do not engage in such disclosures.</p>
+
+    <h3 class="sub-title">For US residents — other state laws</h3>
+    <p>If you reside in Virginia, Colorado, Connecticut, Utah, Texas, Oregon, Montana, or other US states with comprehensive privacy laws, you have rights substantially similar to those described above for California residents, including rights of access, deletion, correction, and (where applicable) the right to opt out of profiling and targeted advertising. We do not engage in profiling or targeted advertising. To exercise any state-specific rights, email <a href="mailto:privacy@getcatchly.com">privacy@getcatchly.com</a>.</p>
+
+    <h3 class="sub-title">For users in the European Economic Area, the United Kingdom, or Switzerland (GDPR / UK GDPR)</h3>
+    <p>If you are located in the EEA, UK, or Switzerland, you have the following rights under the General Data Protection Regulation:</p>
+    <ul>
+      <li><strong>Right of access.</strong> Confirm whether we process your personal data and obtain a copy.</li>
+      <li><strong>Right to rectification.</strong> Correct inaccurate personal data.</li>
+      <li><strong>Right to erasure.</strong> Have your personal data deleted (the "right to be forgotten").</li>
+      <li><strong>Right to restrict processing.</strong> Limit how we process your data.</li>
+      <li><strong>Right to data portability.</strong> Receive your data in a structured, commonly used format.</li>
+      <li><strong>Right to object.</strong> Object to certain types of processing.</li>
+      <li><strong>Right to withdraw consent.</strong> Withdraw consent at any time where processing is based on consent.</li>
+      <li><strong>Right to lodge a complaint.</strong> Lodge a complaint with your local data protection supervisory authority.</li>
+    </ul>
+    <p>The legal basis for processing your waitlist email address is your explicit consent, given when you submit your email. You may withdraw this consent at any time without affecting the lawfulness of processing prior to withdrawal.</p>
+    <p>To exercise these rights, email <a href="mailto:privacy@getcatchly.com">privacy@getcatchly.com</a>. We will respond within 30 days.</p>
+
+    <h3 class="sub-title">For users in India (DPDP Act, 2023)</h3>
+    <p>If you are located in India, you have rights under the Digital Personal Data Protection Act, 2023, including the right to access, correction, erasure, grievance redressal, and nomination. To exercise these rights, email <a href="mailto:privacy@getcatchly.com">privacy@getcatchly.com</a>. The Data Fiduciary contact and Grievance Officer details are available upon request via email.</p>
+
+    <h3 class="sub-title">For users elsewhere</h3>
+    <p>We aim to respect the privacy rights of all users regardless of jurisdiction. If you have a privacy concern, contact us at the email address above and we will work with you to address it.</p>
+
+    <!-- 8. CHILDREN -->
+    <h2 class="s-title" id="children">8. Children's privacy <a href="#children" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p>The Catchly service is not directed to children. We do not knowingly collect personal information from:</p>
+    <ul>
+      <li>Children under 13, as that term is defined under the United States Children's Online Privacy Protection Act (COPPA);</li>
+      <li>Minors under 16, as that term is defined under the California Privacy Rights Act and various EU member state implementations of GDPR; or</li>
+      <li>Children under 18, as that term is defined under India's DPDP Act 2023.</li>
+    </ul>
+    <p>If you believe a child has submitted personal information to Catchly, please contact <a href="mailto:privacy@getcatchly.com">privacy@getcatchly.com</a> and we will delete the record promptly.</p>
+    <p>Parents and guardians of minors who have submitted information may request deletion at the same email address.</p>
+
+    <!-- 9. SECURITY -->
+    <h2 class="s-title" id="security">9. Data security <a href="#security" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p>The Catchly service is designed to minimize the data security risk surface by minimizing the data we collect in the first place. There is no central database of user subscriptions to be breached, because that database does not exist.</p>
+    <p>For the limited personal information we do collect — waitlist email addresses stored in Cloudflare KV — we rely on Cloudflare's security infrastructure, including encryption in transit and at rest, access controls, and SOC 2 compliance.</p>
+    <p><strong>Notification of security incidents.</strong> In the unlikely event of a security incident affecting personal information we hold, we will notify affected users without undue delay and within the timeframes required by applicable law (within 72 hours for GDPR-covered users; as soon as reasonably practicable for users in jurisdictions with similar requirements; in accordance with applicable US state breach notification laws for US users).</p>
+    <p>No software service can guarantee absolute security. You can help protect your data by keeping your browser and operating system up to date and enabling full-disk encryption on your device.</p>
+
+    <!-- 10. TRANSFERS -->
+    <h2 class="s-title" id="transfers">10. International data transfers <a href="#transfers" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p>As described in Section 6, our service provider Cloudflare operates a global infrastructure, and your waitlist email may be processed in data centers outside your country of residence. We rely on Cloudflare's standard contractual arrangements, including Standard Contractual Clauses approved by the European Commission, to govern international transfers where applicable.</p>
+    <p>By submitting your email to our waitlist, you consent to the international transfer of that information.</p>
+
+    <!-- 11. CHANGES -->
+    <h2 class="s-title" id="changes">11. Changes to this policy <a href="#changes" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+    <p>We may update this privacy policy from time to time. When we do, we will update the "Last updated" date at the top of this document.</p>
+    <p>For material changes that affect your rights or how we handle your information, we will:</p>
+    <ul>
+      <li>Update this policy</li>
+      <li>Post a prominent notice on the Catchly website</li>
+      <li>If you have provided your email through the waitlist, send you an email about the change at least 14 days before the change takes effect</li>
+    </ul>
+    <p>For minor changes (clarifications, typo corrections, restructuring for readability), we will update the policy and the date without separate notifications.</p>
+    <p>Archived versions of this policy are available upon request via email.</p>
+
+    <!-- 12. LIABILITY -->
+    <h2 class="s-title" id="liability">12. Disclaimer of warranties and limitation of liability <a href="#liability" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+
+    <h3 class="sub-title">Disclaimer of warranties</h3>
+    <div class="legalese">
+      <p>THE CATCHLY SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY, INCLUDING WITHOUT LIMITATION ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, ACCURACY, OR THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF HARMFUL COMPONENTS.</p>
+      <p>YOU ACKNOWLEDGE THAT NO SOFTWARE OR ONLINE SERVICE CAN BE GUARANTEED TO BE ENTIRELY FREE OF DEFECTS, VULNERABILITIES, OR INTERRUPTIONS, AND THAT YOU USE THE CATCHLY SERVICE AT YOUR OWN DISCRETION AND RISK.</p>
+    </div>
+
+    <h3 class="sub-title">Limitation of liability</h3>
+    <div class="legalese">
+      <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:</p>
+      <p>IN NO EVENT WILL CATCHLY, ITS OPERATOR, OR ANY AFFILIATED PARTIES BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION LOSS OF PROFITS, LOSS OF DATA, LOSS OF GOODWILL, OR OTHER INTANGIBLE LOSSES, ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF OR INABILITY TO USE THE CATCHLY SERVICE, EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+      <p>OUR TOTAL AGGREGATE LIABILITY FOR ALL CLAIMS ARISING FROM OR RELATED TO THE CATCHLY SERVICE, REGARDLESS OF THE FORM OF ACTION, WILL NOT EXCEED THE GREATER OF (i) THE AMOUNT YOU HAVE PAID US IN THE TWELVE MONTHS PRECEDING THE CLAIM, OR (ii) ONE HUNDRED UNITED STATES DOLLARS (USD $100).</p>
+    </div>
+
+    <h3 class="sub-title">Carve-outs</h3>
+    <p>The limitations above do not apply to:</p>
+    <ul>
+      <li>Liability that cannot be excluded under applicable law, including liability for gross negligence, willful misconduct, fraud, or violations of mandatory consumer protection laws in your jurisdiction;</li>
+      <li>Statutory damages, attorneys' fees, or other remedies expressly provided by privacy or consumer protection laws applicable to you, including without limitation the California Consumer Privacy Act and the General Data Protection Regulation;</li>
+      <li>Rights you may have as a consumer that cannot be waived under the laws of your country or state of residence.</li>
+    </ul>
+    <p>Some jurisdictions do not allow the exclusion of certain warranties or the limitation of certain damages. To the extent such exclusions or limitations are not enforceable under the laws applicable to you, the exclusions and limitations above will apply only to the maximum extent permitted by those laws.</p>
+
+    <!-- 13. CONTACT -->
+    <h2 class="s-title" id="contact">13. Contact and dispute resolution <a href="#contact" class="hash" aria-label="Link to this section">#</a></h2>
+    <hr class="s-rule" />
+
+    <h3 class="sub-title">General privacy contact</h3>
+    <p>For any question, complaint, or request regarding this policy or our handling of your information:</p>
+    <p><strong>Email:</strong> <a href="mailto:privacy@getcatchly.com">privacy@getcatchly.com</a></p>
+    <p>We monitor the following subject lines specifically:</p>
+    <ul>
+      <li><strong>"Delete my data"</strong> or <strong>"Delete my waitlist signup"</strong> — for deletion requests</li>
+      <li><strong>"Privacy question"</strong> — for general questions</li>
+      <li><strong>"Privacy concern"</strong> — for concerns about our practices</li>
+      <li><strong>"[URGENT]"</strong> prefix — for security issues or other time-sensitive matters</li>
+    </ul>
+    <p>A postal address for written correspondence is available upon request via email.</p>
+
+    <h3 class="sub-title">Governing law</h3>
+    <p>This privacy policy and any disputes arising from or relating to it are governed by the laws of the State of Delaware, United States, without regard to its conflict-of-law principles, except where the laws of your country or state of residence apply mandatorily.</p>
+
+    <h3 class="sub-title">Jurisdiction</h3>
+    <p>Any dispute arising from or relating to this privacy policy or your use of the Catchly service will be resolved exclusively in the state or federal courts located in the State of Delaware, United States.</p>
+    <p>The foregoing jurisdiction clause does not limit any rights you may have under applicable consumer protection law to bring claims in the courts of your country, state, or province of residence, where such rights are mandatorily granted by law. EU consumers retain the right under GDPR Article 79 to bring claims in their member state of residence. California consumers retain rights to bring claims as provided under California law.</p>
+
+    <!-- Closing -->
+    <p class="closing-note">This privacy policy is written in plain language. We have done our best to be specific and honest about what we collect, what we don't, and what your rights are. If you spot something unclear or believe we have missed something important, please let us know — we would rather fix it than have it remain incorrect.</p>
+    <hr class="closing-rule" />
+  </main>
+
+  <!-- ============================================================
+       RIGHT RAIL (XL only) — reading progress, pull-quote, actions
+       ============================================================ -->
+  <aside class="rail" aria-label="Reading helpers">
+    <div class="rail-card">
+      <p class="rail-lbl">Reading progress</p>
+      <div class="rail-progress">
+        <span class="pct" id="railPct">0%</span>
+        <span class="of" id="railOf">of 13 sections</span>
+      </div>
+      <div class="rail-bar"><span class="fill" id="railFill"></span></div>
+      <div class="rail-section">
+        <span class="of">You're in</span>
+        <span class="name" id="railSection">At a glance</span>
+      </div>
+    </div>
+
+    <div class="rail-pull">
+      <blockquote>"We don't see your data because we don't have it. The architecture makes it impossible."</blockquote>
+      <cite>Section 2.1</cite>
+    </div>
+
+    <div class="rail-card">
+      <p class="rail-lbl">Quick actions</p>
+      <div class="rail-actions">
+        <button type="button" class="rail-act" id="railPrint">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M4 5V2.5h8V5M4 12.5H2.5v-5h11v5H12M4 10h8v3.5H4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+          Print policy
+        </button>
+        <button type="button" class="rail-act" id="railCopy">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="5" y="2.5" width="8.5" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M11 12.5v.5a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 2 13V6.5A1.5 1.5 0 0 1 3.5 5H4" stroke="currentColor" stroke-width="1.3"/>
+          </svg>
+          Copy link
+          <span class="copy-state" id="railCopyState">Copied</span>
+        </button>
+        <a href="mailto:privacy@getcatchly.com?subject=Privacy%20question" class="rail-act" id="railEmail">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="2" y="3.5" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M2.5 4.5L8 8.5l5.5-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Email us
+        </a>
+      </div>
+      <div class="rail-updated">Last updated <b>May 24, 2026</b></div>
+    </div>
+  </aside>
+</div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-row">
+      <div class="footer-left">
+        <span class="footer-mark">
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+            <path d="M4 3v12M6 3H3M6 15H3M14 3v12M12 3h3M12 15h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="9" cy="9" r="2.4" fill="#F5D547"/>
+          </svg>
+        </span>
+        <span>© 2026 Catchly</span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="#">Terms</a>
+        <a href="mailto:privacy@getcatchly.com">Contact</a>
+      </div>
+    </div>
+    <div class="footer-tail">Last updated: May 24, 2026 — Have a question? privacy@getcatchly.com</div>
+  </div>
+</footer>
+
+<script>
+(function() {
+  // Nav scroll background
+  var nav = document.getElementById('nav');
+  function onScroll() {
+    if (window.scrollY > 8) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Theme toggle
+  var toggle = document.getElementById('themeToggle');
+  function updateAria() {
+    var cur = document.documentElement.dataset.theme || 'light';
+    toggle.setAttribute('aria-label', cur === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+  }
+  updateAria();
+  toggle.addEventListener('click', function() {
+    var cur = document.documentElement.dataset.theme || 'light';
+    var next = cur === 'light' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('catchly_theme', next); } catch (e) {}
+    updateAria();
+  });
+
+  // Mobile TOC toggle
+  var mobileToc = document.getElementById('mobileToc');
+  var mobileTocBtn = document.getElementById('mobileTocBtn');
+  if (mobileTocBtn) {
+    mobileTocBtn.addEventListener('click', function() {
+      var open = mobileToc.classList.toggle('open');
+      mobileTocBtn.setAttribute('aria-expanded', String(open));
+    });
+    document.querySelectorAll('#mobileTocPanel a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        mobileToc.classList.remove('open');
+        mobileTocBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
+  // Scroll-spy: highlight TOC link matching the section currently in view
+  var sections = Array.prototype.slice.call(document.querySelectorAll('h2.s-title[id], h3.sub-title[id], .glance[id]'));
+  var tocLinks = {};
+  document.querySelectorAll('#tocList a, #mobileTocPanel a').forEach(function(a) {
+    var id = a.getAttribute('href').slice(1);
+    if (!tocLinks[id]) tocLinks[id] = [];
+    tocLinks[id].push(a);
+  });
+  function setActive(id) {
+    Object.keys(tocLinks).forEach(function(k) {
+      tocLinks[k].forEach(function(a) {
+        var match = (k === id);
+        a.classList.toggle('is-active', match);
+        if (match) a.setAttribute('aria-current', 'location');
+        else a.removeAttribute('aria-current');
+      });
+    });
+  }
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          var id = entry.target.id;
+          if (tocLinks[id]) setActive(id);
+        }
+      });
+    }, { rootMargin: '-88px 0px -65% 0px', threshold: 0 });
+    sections.forEach(function(s) { io.observe(s); });
+  }
+
+  // Copy section link on hash click
+  document.querySelectorAll('.s-title .hash').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      var href = a.getAttribute('href');
+      var url = location.origin + location.pathname + href;
+      try {
+        history.replaceState(null, '', href);
+        if (navigator.clipboard) navigator.clipboard.writeText(url);
+      } catch (e) {}
+      var el = document.querySelector(href);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // ============================================================
+  // Right rail — reading progress + section label + actions
+  // ============================================================
+  var railFill = document.getElementById('railFill');
+  var railPct = document.getElementById('railPct');
+  var railSection = document.getElementById('railSection');
+  var railOf = document.getElementById('railOf');
+
+  // Map of anchor id -> human-readable section name (uses TOC label)
+  var sectionNames = {
+    'glance': 'At a glance',
+    'about': '1. About Catchly',
+    'info': '2. Information we collect',
+    'info-local': '2.1 Stored locally',
+    'info-waitlist': '2.2 Waitlist',
+    'info-notcollected': '2.3 Not collected',
+    'info-sold': '2.4 Sold or shared',
+    'upcoming': '3. Upcoming features',
+    'permissions': '4. Browser permissions',
+    'cookies': '5. Cookies',
+    'handle': '6. How we handle data',
+    'rights': '7. Your rights',
+    'children': "8. Children's privacy",
+    'security': '9. Data security',
+    'transfers': '10. International transfers',
+    'changes': '11. Changes',
+    'liability': '12. Liability',
+    'contact': '13. Contact'
+  };
+  // Track the canonical 13 H2 sections (plus glance) for progress count
+  var TOP_LEVEL_IDS = ['glance','about','info','upcoming','permissions','cookies','handle','rights','children','security','transfers','changes','liability','contact'];
+  var totalSections = TOP_LEVEL_IDS.length - 1; // excludes glance; 13 numbered + glance shown separately
+
+  function rafThrottle(fn) {
+    var ticking = false;
+    return function() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function() { fn(); ticking = false; });
+    };
+  }
+
+  function updateRail() {
+    if (!railFill) return;
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY || doc.scrollTop;
+    var winH = window.innerHeight;
+    var docH = doc.scrollHeight - winH;
+    var pct = docH > 0 ? Math.min(100, Math.max(0, Math.round((scrollTop / docH) * 100))) : 0;
+    railFill.style.width = pct + '%';
+    if (railPct) railPct.textContent = pct + '%';
+  }
+
+  // Hook into existing scroll listener
+  var onRailScroll = rafThrottle(updateRail);
+  window.addEventListener('scroll', onRailScroll, { passive: true });
+  window.addEventListener('resize', updateRail, { passive: true });
+  updateRail();
+
+  // Tie active section to rail label (uses the same setActive in scroll-spy via patching)
+  var origSetActive = window.__setActive;
+  function setRailSection(id) {
+    if (!railSection) return;
+    var label = sectionNames[id];
+    if (label) railSection.textContent = label;
+    // Update "X of Y" counter (top-level only)
+    var topIdx = TOP_LEVEL_IDS.indexOf(id);
+    if (topIdx > 0 && railOf) {
+      railOf.textContent = topIdx + ' of ' + totalSections;
+    } else if (topIdx === 0 && railOf) {
+      railOf.textContent = '0 of ' + totalSections;
+    }
+  }
+  // Re-observe sections to also feed the rail label — reuse the existing IO setup
+  if ('IntersectionObserver' in window) {
+    var railIO = new IntersectionObserver(function(entries) {
+      // Pick the entry closest to the top edge that is intersecting
+      var best = null;
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          if (!best || e.target.getBoundingClientRect().top < best.getBoundingClientRect().top) {
+            best = e.target;
+          }
+        }
+      });
+      if (best) setRailSection(best.id);
+    }, { rootMargin: '-100px 0px -65% 0px', threshold: 0 });
+    document.querySelectorAll('h2.s-title[id], h3.sub-title[id], .glance[id]').forEach(function(s) {
+      railIO.observe(s);
+    });
+  }
+
+  // Print action
+  var railPrint = document.getElementById('railPrint');
+  if (railPrint) railPrint.addEventListener('click', function() { window.print(); });
+
+  // Copy current section link
+  var railCopy = document.getElementById('railCopy');
+  var railCopyState = document.getElementById('railCopyState');
+  if (railCopy) {
+    railCopy.addEventListener('click', function() {
+      var hash = window.location.hash || (function() {
+        // Fallback: find first visible h2/h3
+        var probe = document.querySelectorAll('h2.s-title[id]');
+        for (var i = 0; i < probe.length; i++) {
+          var r = probe[i].getBoundingClientRect();
+          if (r.top >= 0 && r.top < window.innerHeight * 0.4) return '#' + probe[i].id;
+        }
+        return '#glance';
+      })();
+      var url = location.origin + location.pathname + hash;
+      try {
+        if (navigator.clipboard) navigator.clipboard.writeText(url);
+        else {
+          var ta = document.createElement('textarea');
+          ta.value = url; document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); ta.remove();
+        }
+        if (railCopyState) {
+          railCopyState.classList.add('show');
+          setTimeout(function() { railCopyState.classList.remove('show'); }, 1500);
+        }
+      } catch (e) {}
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
