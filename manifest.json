@@ -3,7 +3,7 @@
   "name": "Catchly",
   "version": "0.1.0",
   "minimum_chrome_version": "105",
-  "description": "Privacy-first subscription tracker. Auto-detects subs at checkout, warns before renewal, flags price hikes, guides cancellation. Local-only — no bank login, no data sold.",
+  "description": "Catch forgotten subscriptions, price hikes, and shadow charges — locally, in your browser. No bank login. No account.",
   "permissions": [
     "storage",
     "alarms",

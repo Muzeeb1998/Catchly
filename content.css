@@ -1,11 +1,11 @@
 /*
   Catchly — content.css
-  In-page toast. Tokens scoped to .sentry-toast so host-page CSS can't
+  In-page toast. Tokens scoped to .catchly-toast so host-page CSS can't
   bleed in and we don't bleed out. System font stack — content scripts
   shouldn't fetch Google Fonts (CSP, perf, host-page leakage).
 */
 
-.sentry-toast {
+.catchly-toast {
   --s-canvas:        #FFFFFF;
   --s-surface:       #F7F8FA;
   --s-border:        #E3E8EF;
@@ -44,7 +44,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .sentry-toast {
+  .catchly-toast {
     --s-canvas:        #0B1220;
     --s-surface:       #111A2E;
     --s-border:        #1F2C46;
@@ -61,7 +61,7 @@
 /* Forced dark variant — same tokens as the prefers-color-scheme dark block
    above, but applied unconditionally when the user picks "Dark" from the
    theme dropdown so the toast renders dark regardless of OS setting. */
-.sentry-toast[data-theme="dark"] {
+.catchly-toast[data-theme="dark"] {
   --s-canvas:        #0B1220 !important;
   --s-surface:       #111A2E !important;
   --s-border:        #1F2C46 !important;
@@ -75,9 +75,9 @@
 }
 
 /* Utility theme for the in-page toast — matches popup/options Utility palette.
-   Selector is the same .sentry-toast root but qualified with [data-theme="utility"]
+   Selector is the same .catchly-toast root but qualified with [data-theme="utility"]
    which content.js sets when the user's stored theme is "utility". */
-.sentry-toast[data-theme="utility"] {
+.catchly-toast[data-theme="utility"] {
   --s-canvas:        #F7F8FA !important;
   --s-surface:       #FFFFFF !important;
   --s-border:        #E3E8EF !important;
@@ -90,7 +90,7 @@
   --s-success:       #00875A !important;
 }
 @media (prefers-color-scheme: dark) {
-  .sentry-toast[data-theme="utility"] {
+  .catchly-toast[data-theme="utility"] {
     --s-canvas:        #0A1628 !important;
     --s-surface:       #131F33 !important;
     --s-border:        #26344A !important;
@@ -105,24 +105,24 @@
   }
 }
 
-.sentry-toast.sentry-toast-in {
+.catchly-toast.catchly-toast-in {
   opacity: 1 !important;
   transform: translateY(0) !important;
 }
 
-.sentry-toast-bar {
+.catchly-toast-bar {
   width: 4px !important;
   border-radius: 2px 0 0 2px !important;
   background: var(--s-ink-2) !important;
   align-self: stretch !important;
 }
 
-.sentry-toast-body {
+.catchly-toast-body {
   min-width: 0 !important;
   padding-right: 8px !important;
 }
 
-.sentry-toast-eyebrow {
+.catchly-toast-eyebrow {
   font-size: 11px !important;
   font-weight: 500 !important;
   letter-spacing: 0.04em !important;
@@ -131,7 +131,7 @@
   margin-bottom: 2px !important;
 }
 
-.sentry-toast-title {
+.catchly-toast-title {
   font-size: 14px !important;
   font-weight: 600 !important;
   letter-spacing: -0.01em !important;
@@ -142,7 +142,7 @@
   white-space: nowrap !important;
 }
 
-.sentry-toast-price {
+.catchly-toast-price {
   font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace !important;
   font-variant-numeric: tabular-nums !important;
   font-size: 12px !important;
@@ -151,19 +151,19 @@
   margin-top: 4px !important;
 }
 
-.sentry-toast-actions {
+.catchly-toast-actions {
   display: flex !important;
   gap: 6px !important;
   margin-top: 10px !important;
 }
 
-.sentry-toast-foot {
+.catchly-toast-foot {
   font-size: 11px !important;
   color: var(--s-muted) !important;
   margin-top: 10px !important;
 }
 
-.sentry-btn {
+.catchly-btn {
   height: 28px !important;
   padding: 0 10px !important;
   display: inline-flex !important;
@@ -179,27 +179,27 @@
   transition: background 120ms ease-out, color 120ms ease-out, border-color 120ms ease-out !important;
 }
 
-.sentry-btn-primary {
+.catchly-btn-primary {
   background: var(--s-primary) !important;
   color: #fff !important;
   border-color: var(--s-primary) !important;
 }
-.sentry-btn-primary:hover {
+.catchly-btn-primary:hover {
   background: var(--s-primary-hover) !important;
   border-color: var(--s-primary-hover) !important;
 }
 
-.sentry-btn-ghost {
+.catchly-btn-ghost {
   background: transparent !important;
   color: var(--s-ink-2) !important;
   border-color: transparent !important;
 }
-.sentry-btn-ghost:hover {
+.catchly-btn-ghost:hover {
   background: var(--s-surface) !important;
   color: var(--s-ink) !important;
 }
 
-.sentry-toast-close {
+.catchly-toast-close {
   position: absolute !important;
   top: 6px !important;
   right: 6px !important;
@@ -218,20 +218,20 @@
   cursor: pointer !important;
   transition: background 120ms ease-out, color 120ms ease-out !important;
 }
-.sentry-toast-close:hover {
+.catchly-toast-close:hover {
   background: var(--s-surface) !important;
   color: var(--s-ink) !important;
 }
 
-.sentry-toast-confirm {
+.catchly-toast-confirm {
   width: 240px !important;
 }
-.sentry-toast-confirm .sentry-toast-bar {
+.catchly-toast-confirm .catchly-toast-bar {
   background: var(--s-success) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sentry-toast {
+  .catchly-toast {
     transition: none !important;
   }
 }

@@ -11,22 +11,45 @@
 // Value:   JSON { email, source, version, dismissedCount, ts }
 //
 // Privacy: no IP, no user-agent, no headers persisted. Only what the
-// client submits. Tighten ALLOWED_ORIGIN to your packed extension id
-// once it's known (chrome-extension://<id>).
+// client submits.
+//
+// CORS policy
+//   We don't echo "*". Instead we match the request's Origin header
+//   against an allowlist of patterns:
+//     - chrome-extension://<32 lowercase a–p chars>  (any packed
+//       Chrome extension id — Chrome generates ids from this alphabet)
+//     - https://getcatchly.com / https://www.getcatchly.com (the
+//       landing page, in case a future direct-from-site signup form
+//       is added)
+//   If the Origin doesn't match we still respond with JSON so the
+//   server-side debug story is sane, but we set
+//   Access-Control-Allow-Origin: "null" so the browser blocks the
+//   response from reaching unauthorized JS. Vary: Origin keeps caches
+//   from mixing allowed/blocked responses.
 
-const ALLOWED_ORIGIN = '*';
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'content-type',
-  'Access-Control-Max-Age': '86400'
-};
+const ORIGIN_ALLOWLIST = [
+  /^chrome-extension:\/\/[a-p]{32}$/,
+  /^https:\/\/getcatchly\.com$/,
+  /^https:\/\/www\.getcatchly\.com$/
+];
+
+function corsHeaders(origin) {
+  const allowed = typeof origin === 'string' && ORIGIN_ALLOWLIST.some(re => re.test(origin));
+  return {
+    'Access-Control-Allow-Origin': allowed ? origin : 'null',
+    'Vary': 'Origin',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'content-type',
+    'Access-Control-Max-Age': '86400'
+  };
+}
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function json(body, status = 200, extra = {}) {
+function json(body, status = 200, origin = null, extra = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json', ...CORS_HEADERS, ...extra }
+    headers: { 'content-type': 'application/json', ...corsHeaders(origin), ...extra }
   });
 }
 
@@ -36,22 +59,24 @@ function clip(s, n) {
 
 export default {
   async fetch(request, env) {
+    const origin = request.headers.get('origin');
+
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
+      return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
 
     const url = new URL(request.url);
     if (request.method !== 'POST' || url.pathname !== '/signup') {
-      return json({ ok: false, error: 'not_found' }, 404);
+      return json({ ok: false, error: 'not_found' }, 404, origin);
     }
 
     let payload;
     try { payload = await request.json(); }
-    catch { return json({ ok: false, error: 'invalid_json' }, 400); }
+    catch { return json({ ok: false, error: 'invalid_json' }, 400, origin); }
 
     const email = clip(payload?.email, 254).trim().toLowerCase();
     if (!email || email.length < 3 || !EMAIL_RE.test(email)) {
-      return json({ ok: false, error: 'invalid_email' }, 400);
+      return json({ ok: false, error: 'invalid_email' }, 400, origin);
     }
 
     const source = clip(payload?.source, 32) || 'unknown';
@@ -64,9 +89,9 @@ export default {
 
     try {
       await env.WAITLIST.put(key, value);
-      return json({ ok: true });
+      return json({ ok: true }, 200, origin);
     } catch (err) {
-      return json({ ok: false, error: 'storage_error' }, 500);
+      return json({ ok: false, error: 'storage_error' }, 500, origin);
     }
   }
 };

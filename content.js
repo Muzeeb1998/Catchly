@@ -4,8 +4,8 @@
 // best-guess price, cycle, source URL. User must click "Track" to save.
 
 (function () {
-  if (window.__sentryContentLoaded) return;
-  window.__sentryContentLoaded = true;
+  if (window.__catchlyContentLoaded) return;
+  window.__catchlyContentLoaded = true;
 
   // ---------- theme (Part C) ----------
   // Current theme value held in a module var; updated on init and again
@@ -17,7 +17,7 @@
     chrome.storage.local.get('settings_v1', (res) => {
       const t = res && res.settings_v1 && res.settings_v1.theme;
       if (__VALID_THEMES[t]) __currentTheme = t;
-      const open = document.getElementById('__sentry_toast');
+      const open = document.getElementById('__catchly_toast');
       if (open) open.setAttribute('data-theme', __currentTheme);
     });
   } catch {}
@@ -26,7 +26,7 @@
       if (!msg || msg.type !== 'theme_changed') return;
       if (__VALID_THEMES[msg.theme]) {
         __currentTheme = msg.theme;
-        const open = document.getElementById('__sentry_toast');
+        const open = document.getElementById('__catchly_toast');
         if (open) open.setAttribute('data-theme', __currentTheme);
       }
     });
@@ -77,12 +77,12 @@
   // ---------- toast UI ----------
   function buildToast({ serviceName, amount, cycle, isTrial, color, serviceKey }) {
     // Remove any prior toast
-    const prior = document.getElementById('__sentry_toast');
+    const prior = document.getElementById('__catchly_toast');
     if (prior) prior.remove();
 
     const root = document.createElement('div');
-    root.id = '__sentry_toast';
-    root.className = 'sentry-toast';
+    root.id = '__catchly_toast';
+    root.className = 'catchly-toast';
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-label', 'Catchly — track this subscription?');
     root.setAttribute('data-theme', __currentTheme);
@@ -92,22 +92,22 @@
     const colorDot = color || '#0F1419';
 
     root.innerHTML = `
-      <div class="sentry-toast-bar" style="background:${colorDot}"></div>
-      <div class="sentry-toast-body">
-        <div class="sentry-toast-eyebrow">${label}</div>
-        <div class="sentry-toast-title">${escapeHtml(serviceName)}</div>
-        ${priceStr ? `<div class="sentry-toast-price">${priceStr}${isTrial ? ' after trial' : ''}</div>` : ''}
-        <div class="sentry-toast-actions">
-          <button class="sentry-btn sentry-btn-primary" data-act="track">Track this</button>
-          <button class="sentry-btn sentry-btn-ghost" data-act="dismiss">Not now</button>
+      <div class="catchly-toast-bar" style="background:${colorDot}"></div>
+      <div class="catchly-toast-body">
+        <div class="catchly-toast-eyebrow">${label}</div>
+        <div class="catchly-toast-title">${escapeHtml(serviceName)}</div>
+        ${priceStr ? `<div class="catchly-toast-price">${priceStr}${isTrial ? ' after trial' : ''}</div>` : ''}
+        <div class="catchly-toast-actions">
+          <button class="catchly-btn catchly-btn-primary" data-act="track">Track this</button>
+          <button class="catchly-btn catchly-btn-ghost" data-act="dismiss">Not now</button>
         </div>
-        <div class="sentry-toast-foot">Stays on your device. Nothing sent anywhere.</div>
+        <div class="catchly-toast-foot">Stays on your device. Nothing sent anywhere.</div>
       </div>
-      <button class="sentry-toast-close" data-act="dismiss" aria-label="Close">×</button>
+      <button class="catchly-toast-close" data-act="dismiss" aria-label="Close">×</button>
     `;
     document.documentElement.appendChild(root);
 
-    requestAnimationFrame(() => root.classList.add('sentry-toast-in'));
+    requestAnimationFrame(() => root.classList.add('catchly-toast-in'));
 
     // Auto-dismiss timer set below; dismiss() clears it so the manual-dismiss
     // path doesn't leave a 25s timeout firing on an already-removed node.
@@ -117,7 +117,7 @@
         clearTimeout(autoDismissTimer);
         autoDismissTimer = null;
       }
-      root.classList.remove('sentry-toast-in');
+      root.classList.remove('catchly-toast-in');
       setTimeout(() => root.remove(), 250);
     };
 
@@ -140,7 +140,7 @@
           await chrome.runtime.sendMessage({ type: 'capture', payload });
           showToastConfirmation();
         } catch (err) {
-          console.warn('[Sentry] capture failed', err);
+          console.warn('[Catchly] capture failed', err);
         }
         dismiss();
       }
@@ -152,17 +152,17 @@
 
   function showToastConfirmation() {
     const c = document.createElement('div');
-    c.className = 'sentry-toast sentry-toast-confirm sentry-toast-in';
+    c.className = 'catchly-toast catchly-toast-confirm catchly-toast-in';
     c.setAttribute('data-theme', __currentTheme);
     c.innerHTML = `
-      <div class="sentry-toast-bar" style="background:#3D8B5C"></div>
-      <div class="sentry-toast-body">
-        <div class="sentry-toast-title">Tracked.</div>
-        <div class="sentry-toast-foot">Open the Catchly icon to view.</div>
+      <div class="catchly-toast-bar" style="background:#3D8B5C"></div>
+      <div class="catchly-toast-body">
+        <div class="catchly-toast-title">Tracked.</div>
+        <div class="catchly-toast-foot">Open the Catchly icon to view.</div>
       </div>`;
     document.documentElement.appendChild(c);
     setTimeout(() => {
-      c.classList.remove('sentry-toast-in');
+      c.classList.remove('catchly-toast-in');
       setTimeout(() => c.remove(), 250);
     }, 2500);
   }

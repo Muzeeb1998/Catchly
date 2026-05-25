@@ -12,11 +12,18 @@ import {
 import { daysUntil, urgencyOf, fmtMoney } from './lib/utils.js';
 import { identifyFromPage } from './lib/merchants.js';
 
-const ALARM_DAILY = 'sentry_daily';
-const ALARM_BADGE = 'sentry_badge';
+const ALARM_DAILY = 'catchly_daily';
+const ALARM_BADGE = 'catchly_badge';
+// Old alarm names from earlier "Subscription Sentry" branding. We
+// clear them on install/update so users upgrading from any internal
+// test build don't accumulate orphan alarms firing on the old keys.
+const LEGACY_ALARMS = ['sentry_daily', 'sentry_badge'];
 
 // ---------- lifecycle ----------
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+  for (const name of LEGACY_ALARMS) {
+    try { await chrome.alarms.clear(name); } catch {}
+  }
   await chrome.alarms.create(ALARM_DAILY, { periodInMinutes: 60 * 24 });
   await chrome.alarms.create(ALARM_BADGE, { periodInMinutes: 60 });
   await refreshBadge();
