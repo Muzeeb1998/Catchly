@@ -1506,3 +1506,405 @@ function wireWaitlistSurface(host, source, surface, closeFn) {
     else if (which === 'hard') closeFn('dismissed_hard');
   });
 }
+
+// ============================================================================
+// BEGIN: ONBOARDING + WHAT'S NEW INFO ICON
+// Added: 2026-05-25
+// Self-contained section. Two controllers (OnboardingController,
+// UpdatesController) plus a single DOMContentLoaded handler at the end.
+// Both controllers read/write only their own chrome.storage.local keys:
+//   - onboardingCompleted (boolean)
+//   - lastSeenUpdate (string version id)
+// and never touch any of the existing keys above
+// (subs_v1, settings_v1, events_v1, pending_captures_v1, usage_v1,
+//  ui_state_v1, waitlist_state).
+// Safe to remove by deleting from "BEGIN: ONBOARDING" down to EOF.
+// ============================================================================
+
+// Source of truth for the popover content. Append entries to introduce a new
+// "what's coming" item; bump CURRENT_UPDATE_VERSION to the new entry's
+// version id and every existing user will see the dot re-appear once.
+const UPCOMING_FEATURES = [
+  {
+    version: 'gmail-scan-v1',
+    eyebrow: 'COMING IN V1.0',
+    icon: '⚡', // ⚡
+    title: 'Gmail auto-scan',
+    body: 'Find every active subscription in your inbox in 15 seconds. Email is parsed locally — never uploaded.',
+    ctaText: 'Get early access →',
+    ctaUrl: 'https://getcatchly.com/#gmail-scan'
+  }
+];
+const CURRENT_UPDATE_VERSION = UPCOMING_FEATURES[0].version;
+
+// Storage keys live here as constants so a future audit can grep them.
+const ONBOARDING_KEY = 'onboardingCompleted';
+const LAST_SEEN_UPDATE_KEY = 'lastSeenUpdate';
+
+// Thin promise-wrapped storage helpers. chrome.storage.local APIs accept
+// callbacks; wrapping in promises keeps the async/await flow readable and
+// gives us a single chokepoint to catch errors without crashing the popup.
+function storageGetSafe(key) {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.local.get(key, (res) => {
+        if (chrome.runtime.lastError) { resolve(undefined); return; }
+        resolve(res ? res[key] : undefined);
+      });
+    } catch { resolve(undefined); }
+  });
+}
+function storageSetSafe(key, value) {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.local.set({ [key]: value }, () => {
+        // Swallow chrome.runtime.lastError — we don't crash the popup on a
+        // storage write failure; the user will just see the dot or onboarding
+        // again next open, which is the safest fallback.
+        void chrome.runtime.lastError;
+        resolve();
+      });
+    } catch { resolve(); }
+  });
+}
+
+// ----- OnboardingController ----------------------------------------------------
+class OnboardingController {
+  constructor() {
+    this.overlay = null;
+    this.screens = [];
+    this.currentStep = 1;
+    this.totalSteps = 3;
+    this.transitioning = false;
+    this._onKeydown = this._onKeydown.bind(this);
+    this._onActionClick = this._onActionClick.bind(this);
+    this._onFocusTrap = this._onFocusTrap.bind(this);
+  }
+
+  async init() {
+    this.overlay = document.getElementById('onboard-overlay');
+    if (!this.overlay) return;
+
+    const done = await storageGetSafe(ONBOARDING_KEY);
+    if (done === true) {
+      // Already onboarded: leave overlay hidden and bail. Onboarding never
+      // re-renders for the same install.
+      return;
+    }
+
+    this.screens = Array.from(this.overlay.querySelectorAll('.onboard-screen'));
+    this.overlay.hidden = false;
+
+    this.overlay.addEventListener('click', this._onActionClick);
+    document.addEventListener('keydown', this._onKeydown, true);
+    this.overlay.addEventListener('keydown', this._onFocusTrap);
+
+    this._focusPrimary();
+  }
+
+  _onActionClick(e) {
+    const btn = e.target instanceof HTMLElement
+      ? e.target.closest('[data-onboard-action]')
+      : null;
+    if (!btn || !this.overlay.contains(btn)) return;
+    e.preventDefault();
+    const action = btn.getAttribute('data-onboard-action');
+    if (action === 'next')     this.next();
+    if (action === 'back')     this.back();
+    if (action === 'skip')     this.skip();
+    if (action === 'complete') this.complete();
+  }
+
+  _onKeydown(e) {
+    // Only react while the overlay is visible. Once dismissed, hand
+    // Esc back to whatever else is listening (drawer, modal, etc).
+    if (!this.overlay || this.overlay.hidden) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      this.skip();
+    }
+  }
+
+  // Simple focus trap. Tab/Shift+Tab wraps inside the visible screen so the
+  // user can't accidentally focus the main UI underneath the overlay.
+  _onFocusTrap(e) {
+    if (e.key !== 'Tab') return;
+    const focusable = this._focusableElements();
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  _focusableElements() {
+    const screen = this.screens.find(s => !s.hidden);
+    if (!screen) return [];
+    return Array.from(screen.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])'));
+  }
+
+  _focusPrimary() {
+    // Defer to next frame so the screen has actually painted before we focus.
+    requestAnimationFrame(() => {
+      const screen = this.screens.find(s => !s.hidden);
+      if (!screen) return;
+      const primary = screen.querySelector('.onboard-btn-primary');
+      if (primary) primary.focus();
+    });
+  }
+
+  next() {
+    if (this.currentStep >= this.totalSteps) { this.complete(); return; }
+    this.showScreen(this.currentStep + 1, 'forward');
+  }
+
+  back() {
+    if (this.currentStep <= 1) return;
+    this.showScreen(this.currentStep - 1, 'backward');
+  }
+
+  showScreen(target, direction = 'forward') {
+    const from = this.screens.find(s => s.dataset.onboardStep === String(this.currentStep));
+    const to = this.screens.find(s => s.dataset.onboardStep === String(target));
+    if (!from || !to || from === to) return;
+
+    // Rapid-click safety — if a previous transition is still scheduled, cancel
+    // its tail so it doesn't fire after the new transition has already moved
+    // state forward (would otherwise hide the screen the user is now on).
+    if (this._transitionTimer) {
+      clearTimeout(this._transitionTimer);
+      this._transitionTimer = null;
+    }
+
+    // Slide-out the current screen, slide-in the next.
+    from.classList.remove('is-entering-left', 'is-entering-right');
+    to.classList.remove('is-leaving-left', 'is-leaving-right');
+    from.classList.add(direction === 'forward' ? 'is-leaving-left' : 'is-leaving-right');
+
+    const DURATION = 280;
+    this._transitionTimer = window.setTimeout(() => {
+      from.hidden = true;
+      from.classList.remove('is-leaving-left', 'is-leaving-right', 'is-active');
+      to.hidden = false;
+      // Apply the entering offset before the next paint, then drop it so the
+      // screen eases to rest.
+      to.classList.add(direction === 'forward' ? 'is-entering-right' : 'is-entering-left');
+      requestAnimationFrame(() => {
+        to.classList.remove('is-entering-right', 'is-entering-left');
+        to.classList.add('is-active');
+      });
+      this.currentStep = target;
+      this._transitionTimer = null;
+      this._focusPrimary();
+    }, DURATION);
+  }
+
+  async skip() {
+    await this._finalize();
+  }
+
+  async complete() {
+    await this._finalize();
+  }
+
+  async _finalize() {
+    if (!this.overlay || this.overlay.hidden) return;
+    this.overlay.classList.add('is-dismissing');
+    await storageSetSafe(ONBOARDING_KEY, true);
+    // Wait for the dismiss animation to finish before fully hiding so the
+    // user sees the fade-out rather than a hard cut.
+    const DISMISS_MS = 240;
+    window.setTimeout(() => {
+      if (!this.overlay) return;
+      this.overlay.hidden = true;
+      this.overlay.classList.remove('is-dismissing');
+      document.removeEventListener('keydown', this._onKeydown, true);
+    }, DISMISS_MS);
+  }
+}
+
+// ----- UpdatesController -------------------------------------------------------
+class UpdatesController {
+  constructor() {
+    this.btn = null;
+    this.popover = null;
+    this.body = null;
+    this.closeBtn = null;
+    this.isOpen = false;
+    this._onDocClick = this._onDocClick.bind(this);
+    this._onKeydown = this._onKeydown.bind(this);
+  }
+
+  async init() {
+    this.btn = document.getElementById('updates-info-btn');
+    this.popover = document.getElementById('updates-popover');
+    this.body = document.getElementById('updates-popover-body');
+    this.closeBtn = document.getElementById('updates-popover-close');
+    if (!this.btn || !this.popover || !this.body) return;
+
+    this._renderItems();
+
+    // Show the dot if the user has never seen the current version. Fresh
+    // installs (no value stored) also see it — see brief edge case: an
+    // upgrade from a version that didn't have this feature must surface the
+    // dot once so users know there's new info.
+    const seen = await storageGetSafe(LAST_SEEN_UPDATE_KEY);
+    this._setDotVisible(seen !== CURRENT_UPDATE_VERSION);
+
+    this.btn.addEventListener('click', () => this.openPopover());
+    this.closeBtn?.addEventListener('click', () => this.closePopover());
+    document.addEventListener('keydown', this._onKeydown);
+  }
+
+  // Render every UPCOMING_FEATURES entry. textContent everywhere — never
+  // innerHTML — so even if a future entry contains characters that look
+  // like HTML it can't break out of the text node.
+  _renderItems() {
+    // Clear previous children safely.
+    while (this.body.firstChild) this.body.removeChild(this.body.firstChild);
+
+    for (const item of UPCOMING_FEATURES) {
+      const wrap = document.createElement('div');
+      wrap.className = 'updates-item';
+
+      const eyebrow = document.createElement('div');
+      eyebrow.className = 'updates-item-eyebrow';
+      // Icon glyph + space + eyebrow text, both via textContent.
+      eyebrow.textContent = `${item.icon} ${item.eyebrow}`;
+      wrap.appendChild(eyebrow);
+
+      const title = document.createElement('div');
+      title.className = 'updates-item-title';
+      title.textContent = item.title;
+      wrap.appendChild(title);
+
+      const body = document.createElement('p');
+      body.className = 'updates-item-body';
+      body.textContent = item.body;
+      wrap.appendChild(body);
+
+      if (item.ctaText && item.ctaUrl) {
+        const cta = document.createElement('button');
+        cta.type = 'button';
+        cta.className = 'updates-item-cta';
+        cta.textContent = item.ctaText;
+        // URL is captured in closure scope, not embedded in markup, so
+        // there's no way for the rendered DOM to be re-parsed with a
+        // different target.
+        const url = item.ctaUrl;
+        cta.addEventListener('click', () => this.handleCtaClick(url));
+        wrap.appendChild(cta);
+      }
+
+      this.body.appendChild(wrap);
+    }
+  }
+
+  _setDotVisible(visible) {
+    if (!this.btn) return;
+    if (visible) {
+      this.btn.setAttribute('data-has-update', 'true');
+      this.btn.setAttribute('aria-label', 'What\'s coming in Catchly — unseen update available');
+    } else {
+      this.btn.removeAttribute('data-has-update');
+      this.btn.setAttribute('aria-label', 'What\'s coming in Catchly');
+    }
+  }
+
+  async openPopover() {
+    if (!this.popover || this.isOpen) return;
+    this.isOpen = true;
+    this.popover.hidden = false;
+    // Force reflow so the transition runs (instead of jumping from hidden).
+    void this.popover.offsetWidth;
+    this.popover.classList.add('is-open');
+    this.btn.setAttribute('aria-expanded', 'true');
+
+    // Mark as seen and clear the dot.
+    await storageSetSafe(LAST_SEEN_UPDATE_KEY, CURRENT_UPDATE_VERSION);
+    this._setDotVisible(false);
+
+    // Register the outside-click listener immediately so synthetic clicks
+    // (Playwright, accessibility tools) fire it on the very next event.
+    // A short-lived guard suppresses the click that opened us — it's the
+    // same trampoline as a setTimeout(0) handoff, but synchronous attach.
+    this._openClickInFlight = true;
+    document.addEventListener('click', this._onDocClick, true);
+    window.setTimeout(() => { this._openClickInFlight = false; }, 0);
+
+    // Move focus to the close button so screen readers announce the dialog
+    // and keyboard users can immediately dismiss it.
+    this.closeBtn?.focus();
+  }
+
+  closePopover() {
+    if (!this.popover || !this.isOpen) return;
+    this.isOpen = false;
+    this.popover.classList.remove('is-open');
+    this.btn?.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('click', this._onDocClick, true);
+    const CLOSE_MS = 150;
+    window.setTimeout(() => {
+      if (this.popover && !this.isOpen) this.popover.hidden = true;
+    }, CLOSE_MS);
+    // Return focus to the info icon so keyboard users land somewhere sane.
+    this.btn?.focus();
+  }
+
+  _onDocClick(e) {
+    if (this._openClickInFlight) return;
+    const t = e.target;
+    if (!(t instanceof Node)) return;
+    if (this.popover.contains(t)) return;
+    if (this.btn?.contains(t))   return;
+    this.closePopover();
+  }
+
+  _onKeydown(e) {
+    if (e.key !== 'Escape') return;
+    if (!this.isOpen) return;
+    e.preventDefault();
+    e.stopPropagation();
+    this.closePopover();
+  }
+
+  handleCtaClick(url) {
+    // chrome.tabs.create is preferred over window.open inside extension
+    // contexts — it bypasses the popup's own window-management constraints
+    // and gives us a guaranteed new tab with the target loaded.
+    try {
+      chrome.tabs.create({ url, active: true });
+    } catch {
+      // Fall back to a same-rules-as-window.open call as a last resort if
+      // the tabs API is somehow unavailable. The browser will still treat
+      // this as a user-initiated navigation because the click is in scope.
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+    this.closePopover();
+  }
+}
+
+// Register both controllers on DOMContentLoaded. This is a SEPARATE listener
+// from the existing one earlier in the file — DOM event listeners stack, so
+// neither blocks the other, and either can be disabled by commenting out its
+// own block without touching the main app init.
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const onboarding = new OnboardingController();
+    await onboarding.init();
+  } catch { /* never let onboarding errors prevent main UI use */ }
+
+  try {
+    const updates = new UpdatesController();
+    await updates.init();
+  } catch { /* same: updates is decorative, never block the popup */ }
+});
+// ============================================================================
+// END: ONBOARDING + WHAT'S NEW INFO ICON
+// ============================================================================

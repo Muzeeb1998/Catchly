@@ -1623,3 +1623,412 @@ html.is-theme-switching * {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================================
+   ONBOARDING + WHAT'S NEW INFO ICON
+   Added: 2026-05-25
+   Two opt-in surfaces that ship with v0.1.0:
+     - Three-screen first-run onboarding overlay (#onboard-overlay)
+     - Persistent header info icon + "What's coming" popover (#updates-*)
+   Both are namespaced with `onboard-` / `updates-` prefixes so they can be
+   excised wholesale by deleting this CSS block plus the matching HTML/JS
+   sections without touching any other rule.
+   Uses Catchly's existing design tokens (--surface, --ink, --primary, etc.)
+   so it adapts to all four themes automatically — no theme-specific code.
+   Safe to remove if rolling back these features.
+   ============================================================================ */
+
+/* ---------- What's New: info icon button + dot ---------- */
+.updates-info-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 12px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background-color var(--t-fast), color var(--t-fast),
+              border-color var(--t-fast), transform var(--t-fast);
+}
+.updates-info-btn:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+.updates-info-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.updates-info-btn:active { transform: scale(0.96); }
+.updates-info-svg { display: block; }
+
+.updates-info-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0;
+  transform: scale(0.6);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.updates-info-btn[data-has-update="true"] .updates-info-dot {
+  opacity: 1;
+  transform: scale(1);
+  animation: updates-dot-pulse 1.5s ease-in-out infinite;
+}
+@keyframes updates-dot-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.15); }
+}
+
+/* ---------- What's New: popover ---------- */
+.updates-popover {
+  position: absolute;
+  top: 56px;
+  left: 16px;
+  width: 320px;
+  max-width: calc(100% - 24px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 200;
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: top left;
+  transition: opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+.updates-popover.is-open {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+.updates-popover[hidden] { display: none !important; }
+
+.updates-popover-arrow {
+  position: absolute;
+  top: -6px;
+  left: 18px;
+  width: 12px;
+  height: 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+.updates-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.updates-popover-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.updates-popover-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--t-fast), background-color var(--t-fast);
+}
+.updates-popover-close:hover { color: var(--ink); background: var(--surface-2); }
+.updates-popover-close:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.updates-popover-body { padding: 14px 14px 8px; }
+
+.updates-item + .updates-item {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.updates-item-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.updates-item-title {
+  margin: 6px 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.updates-item-body {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.updates-item-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+  color: var(--primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.updates-item-cta:hover { text-decoration: underline; }
+.updates-item-cta:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.updates-popover-foot {
+  padding: 8px 14px 12px;
+  font-size: 11px;
+  font-style: italic;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ---------- Onboarding: overlay + screens ---------- */
+.onboard-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: var(--canvas);
+  z-index: 300;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+.onboard-overlay[hidden] { display: none !important; }
+.onboard-overlay.is-dismissing {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+.onboard-card {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.onboard-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 28px 24px 24px;
+  text-align: center;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 280ms ease-in-out, transform 280ms ease-in-out;
+}
+.onboard-screen[hidden] { display: none !important; }
+.onboard-screen.is-leaving-left   { opacity: 0; transform: translateX(-24px); }
+.onboard-screen.is-leaving-right  { opacity: 0; transform: translateX(24px); }
+.onboard-screen.is-entering-right { opacity: 0; transform: translateX(24px); }
+.onboard-screen.is-entering-left  { opacity: 0; transform: translateX(-24px); }
+
+.onboard-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+}
+.onboard-logo { border-radius: 14px; }
+.onboard-shield { color: var(--primary); }
+
+.onboard-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+}
+.onboard-text {
+  margin: 0 auto;
+  max-width: 280px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.onboard-dots {
+  display: inline-flex;
+  gap: 8px;
+}
+.onboard-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  transition: background-color var(--t-fast), border-color var(--t-fast);
+}
+.onboard-dot.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.onboard-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  max-width: 240px;
+}
+.onboard-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--primary);
+  color: var(--canvas);
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--t-fast), transform var(--t-fast);
+}
+.onboard-btn-primary:hover { background: var(--primary-hover); }
+.onboard-btn-primary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.onboard-btn-primary:active { transform: scale(0.98); }
+.onboard-btn-finish { letter-spacing: 0.01em; }
+
+.onboard-skip {
+  background: transparent;
+  border: none;
+  padding: 6px 8px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.onboard-skip:hover { color: var(--ink-2); }
+.onboard-skip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Onboarding: Screen-2 illustration (mini-browser + toast) ---------- */
+.onboard-art-illu { min-height: 132px; }
+.onboard-illu-browser {
+  position: relative;
+  width: 180px;
+  height: 120px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.onboard-illu-chrome {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.onboard-illu-chrome > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+.onboard-illu-page {
+  height: 32px;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--canvas) 100%);
+  opacity: 0.6;
+}
+.onboard-illu-toast {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: flex;
+  width: 112px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.onboard-illu-toast-bar {
+  width: 3px;
+  background: #E50914;
+}
+.onboard-illu-toast-body {
+  flex: 1;
+  padding: 4px 6px;
+  text-align: left;
+}
+.onboard-illu-toast-eyebrow {
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.onboard-illu-toast-title {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.onboard-illu-toast-price {
+  font-size: 8px;
+  color: var(--ink-2);
+}
+.onboard-illu-toast-btn {
+  margin-top: 3px;
+  display: inline-block;
+  padding: 1px 5px;
+  background: var(--primary);
+  color: var(--canvas);
+  border-radius: 3px;
+  font-size: 7px;
+  font-weight: 600;
+}
+/* ===== END: ONBOARDING + WHAT'S NEW INFO ICON ============================ */
