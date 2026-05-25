@@ -1,0 +1,24 @@
+{
+  "name": "catchly",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Privacy-first Chrome extension that tracks your subscriptions without ever asking for your bank login. Detects sign-ups on supported services, warns before renewal, flags price hikes, points to where to cancel.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test:smoke": "playwright test",
+    "test:smoke:headed": "playwright test --headed",
+    "test:smoke:report": "playwright show-report qa/playwright-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Muzeeb1998/Catchly.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Muzeeb1998/Catchly/issues"
+  },
+  "homepage": "https://getcatchly.com",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}
