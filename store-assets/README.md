@@ -10,7 +10,15 @@ Store dashboard at submission time.
 |---|---|---|
 | `promo-tile-440x280.png` | 440 × 280 | Small promo tile (required) |
 | `promo-tile-880x560.png` | 880 × 560 | 2× promo, kept for future hi-DPI use |
-| `screenshot-1.jpg` … `screenshot-5.jpg` | 1280 × 800 | Listing screenshots (Web Store requires exactly 1280×800 or 640×400) |
+| `01-subscriptions.jpg` | 1280 × 800 | Subscription list view (default landing pane) |
+| `02-alerts.jpg`        | 1280 × 800 | Alerts pane — price hikes, trial endings, shadow charges |
+| `03-calendar.jpg`      | 1280 × 800 | Calendar drawer — upcoming renewals in next 30 days |
+| `04-insights.jpg`      | 1280 × 800 | Insights — spend by category, recent activity, yearly recap |
+| `05-settings.jpg`      | 1280 × 800 | Settings — theme, notifications, currency, privacy controls |
+
+Upload order in the Web Store dashboard determines display order;
+the leading numeric prefix on each filename keeps them sorted in
+the order we want users to see them.
 
 ## Constraints
 
