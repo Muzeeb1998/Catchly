@@ -20,8 +20,10 @@ Catch forgotten subscriptions, price hikes, and shadow charges — locally, in y
 It catches the subscriptions you forgot you signed up for, warns
 you before a price hike or auto-renewal hits your card, and flags
 the services you haven't opened in weeks. It runs entirely inside
-your browser. There is no bank login, no account, and nothing ever
-leaves your device.
+your browser. There is no bank login, no required account, and no
+data leaves your device unless you explicitly opt in to a single,
+clearly-marked feature — the waitlist for the upcoming Gmail
+auto-scan, which only sends what you type into the email field.
 
 ---
 
@@ -111,21 +113,25 @@ click — the transition crossfades smoothly.
 
 Privacy claims are cheap. The hard part is *verifying* them.
 
-Because Catchly has no backend, you don't have to trust us. You
-can verify it:
+Catchly has exactly one outbound network call, and only if you
+choose to make it: clicking the "Notify me" button on the
+optional Gmail-auto-scan waitlist sends your email address to a
+Cloudflare Worker so we can email you when the feature launches.
+Nothing else is ever sent. Your subscriptions, your usage data,
+your visit history — none of it leaves your device. Ever.
+
+You don't have to trust us on this; you can verify it:
 
 1. Open Chrome's Developer Tools while the extension runs.
 2. Watch the Network tab.
-3. Add a subscription, get a notification, browse around.
-4. You will not see a single outbound request to a Catchly server,
-   because there isn't one.
+3. Use the extension normally — add a subscription, get a
+   notification, browse to a tracked service, switch themes.
+4. You will see zero outbound requests, because the only outbound
+   call is gated behind the "Notify me" button you have to
+   explicitly click.
 
-The only network call the extension makes is to a Cloudflare
-Worker for the optional Gmail-auto-scan waitlist signup — and
-that only fires *if and when you click the "Notify me" button*.
-Nothing else.
-
-The full source code is on GitHub:
+The full source code is on GitHub if you want to audit any of
+this for yourself:
 **https://github.com/Muzeeb1998/Catchly**
 
 ---
