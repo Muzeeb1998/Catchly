@@ -1,18 +1,13 @@
 # macOS Finder metadata
 .DS_Store
 
-# Stray scratch folder left over from earlier exports
-logos/Product Audit(15/
-
-# Internal QA artifacts — kept locally, not published. These are working
-# notes (bug triage, manual-test walkthroughs, static-analysis dumps) that
-# don't add user-facing value to the public repo and look unprofessional
-# next to README/LICENSE on the GitHub home page. Re-enable by deleting
-# the relevant line below if you want public bug transparency.
+# Internal QA artifacts — kept locally, not published. Working notes
+# (bug triage, manual-test walkthroughs, static-analysis dumps) live
+# under qa/ so the repo root stays clean. The whole folder is ignored;
+# un-ignore specific files inside if you ever want public bug
+# transparency.
 .gstack/
-test-report.md
-critical-bugs.md
-manual-test-checklist.md
+qa/
 
 # Wrangler local state (the published wrangler.toml is checked in)
 worker/.wrangler/
