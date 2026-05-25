@@ -222,16 +222,25 @@ const ALERT_ICONS = {
 };
 
 // ----------------------------------------------------------------------------
-// brand square — real brand logo from simpleicons.org CDN over a brand-color
-// tile. Falls back to first-letter monogram on the brand tile if the CDN
-// fetch fails (handled by a single global error listener wired at boot to
-// avoid inline onerror handlers, which MV3 CSP blocks). (Change 3)
+// brand square — real brand logo from bundled SVG over a brand-color tile.
+// Falls back to first-letter monogram on the brand tile if the file is
+// missing (handled by a single global error listener wired at boot to
+// avoid inline onerror handlers, which MV3 CSP blocks).
+//
+// Why bundled, not CDN: an earlier version fetched these from
+// cdn.simpleicons.org at render time. That contradicted our "local-only,
+// nothing leaves your device" privacy claim — each render disclosed which
+// services the user was tracking to a third-party CDN. The 15 mark SVGs
+// we ship now live in logos/ and load over the chrome-extension:// scheme,
+// so there is no outbound traffic for icon rendering. Five marks
+// (Disney+, Hulu, Prime Video, ChatGPT/OpenAI, Adobe) are not in the
+// Simple Icons set due to trademark concerns and intentionally fall
+// through to the monogram fallback.
 // ----------------------------------------------------------------------------
-function cdnLogoUrl(slug) {
-  // Simple Icons colorized endpoint: returns the official monochrome mark
-  // tinted to the given hex (no #). We use FFFFFF so the mark sits on top
-  // of our brand-color tile.
-  return `https://cdn.simpleicons.org/${encodeURIComponent(slug)}/FFFFFF`;
+function localLogoUrl(slug) {
+  // Resolves to chrome-extension://<id>/logos/<slug>.svg. Same-origin from
+  // the popup, no web_accessible_resources entry required.
+  return chrome.runtime.getURL(`logos/${slug}.svg`);
 }
 
 function brandSquareHtml({ serviceKey, color, name, logo, cdnSlug } = {}, size = 32) {
@@ -245,15 +254,16 @@ function brandSquareHtml({ serviceKey, color, name, logo, cdnSlug } = {}, size =
   const imgSize = Math.round(size * 0.6);
   const styleTile = `width:${size}px;height:${size}px;border-radius:${radius}px;background:${esc(brand)};`;
   if (slug) {
-    return `<span class="brand-square" data-initial="${esc(initial)}" data-fs="${fontSize}" style="${styleTile}"><img src="${cdnLogoUrl(slug)}" alt="" width="${imgSize}" height="${imgSize}" loading="lazy"/></span>`;
+    return `<span class="brand-square" data-initial="${esc(initial)}" data-fs="${fontSize}" style="${styleTile}"><img src="${localLogoUrl(slug)}" alt="" width="${imgSize}" height="${imgSize}" loading="lazy"/></span>`;
   }
   // Fallback: solid brand bg + white letter
   return `<span class="brand-square brand-fallback" style="${styleTile}font-size:${fontSize}px;">${esc(initial)}</span>`;
 }
 
-// Global error fallback — if the CDN image fails (offline, CDN down, slug
-// not found), swap the broken <img> for the first-letter monogram. Capture
-// phase because <img> error events don't bubble. Registered once at boot.
+// Global error fallback — if a bundled SVG is missing for any reason
+// (shipped without it, file corrupted), swap the broken <img> for the
+// first-letter monogram. Capture phase because <img> error events don't
+// bubble. Registered once at boot.
 function wireBrandSquareFallback() {
   document.addEventListener('error', (e) => {
     const img = e.target;
