@@ -170,11 +170,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .brand-mark {
   width: 38px; height: 38px;
-  background: var(--ink);
-  color: var(--canvas);
   border-radius: 10px;
-  display: inline-grid; place-items: center;
+  overflow: hidden;
+  display: inline-block;
+  flex-shrink: 0;
+  background: var(--ink);
 }
+.brand-mark img { width: 100%; height: 100%; display: block; }
 .brand-mark svg { display: block; }
 .nav-right { display: inline-flex; align-items: center; gap: 6px; }
 .theme-toggle {
@@ -943,10 +945,7 @@ h3.sub-title {
   <div class="nav-inner">
     <a href="index.html" class="brand" aria-label="Catchly home">
       <span class="brand-mark" aria-hidden="true">
-        <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
-          <path d="M4 3v12M6 3H3M6 15H3M14 3v12M12 3h3M12 15h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          <circle cx="9" cy="9" r="2.4" fill="#F5D547"/>
-        </svg>
+        <img src="appicon.png" alt="" width="38" height="38" decoding="async" />
       </span>
       <span>catchly</span>
     </a>
