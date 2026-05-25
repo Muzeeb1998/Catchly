@@ -144,20 +144,22 @@ We ask for four permissions. Each one has a specific, narrow job.
   match it against the list of known subscription services
   (Netflix, Spotify, etc.) and so the "how long since you last
   visited" check works.
-- Host permission `<all_urls>` — needed for the in-page toast at
-  checkout to work on any site. We explicitly exclude 47
-  sensitive domains from the content script: every major bank
-  (Chase, BoA, Wells Fargo, Capital One, Citi, ...), brokerages
-  (Schwab, Fidelity, Vanguard, ...), payment processors (Stripe,
-  PayPal, Venmo, Cash App, ...), identity providers (Google
-  Accounts, Apple ID, Microsoft, Okta, Auth0, ...), and
-  government sites (irs.gov, ssa.gov, ...). Catchly never runs
-  on those pages.
+- **Host permissions — narrow allowlist, not `<all_urls>`.**
+  Catchly only runs its content script on the 23 specific
+  subscription services it supports at launch: Netflix, Spotify,
+  Disney+, Max, Hulu, Prime Video, YouTube, Apple Music, Apple TV,
+  ChatGPT/OpenAI, Claude/Anthropic, Notion, Grammarly, Dropbox,
+  1Password, Adobe, Audible, New York Times, GitHub, and Figma.
+  Every host permission is enumerated in `manifest.json` — no
+  `<all_urls>`, no wildcard. Catchly cannot read, modify, or
+  observe any page outside this list.
 
-We do not request `<all_urls>` host permission to spy on you. We
-request it because Chrome's content-script API has no way to say
-"only run on shopping checkout pages." The exclude list is the
-strongest mitigation Chrome offers.
+The narrow host-permission allowlist means Catchly literally
+*cannot* run on your bank, brokerage, healthcare, government,
+identity-provider, or any other site. The browser enforces this;
+it's not a trust-us promise. We add new services to the list in
+future versions only when there's user demand for them, and each
+new service is visible in the published manifest diff on GitHub.
 
 ---
 
