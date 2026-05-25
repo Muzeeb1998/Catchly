@@ -1130,8 +1130,10 @@ h3.sub-title {
     <p><code class="k">alarms</code> — Schedules renewal reminders via Chrome's alarm system. Required for the notification timing logic.</p>
     <p><code class="k">notifications</code> — Displays desktop notifications when a renewal is approaching, a trial is ending, or a shadow-charge warning is triggered.</p>
     <p><code class="k">tabs</code> — Opens new tabs when you click a notification or a cancellation link from the extension popup.</p>
-    <p><strong>Host permissions for all URLs</strong> — Allows our content script to run on any webpage you visit.</p>
-    <p>The content script's only purpose is subscription detection. When you visit a webpage, the script briefly examines signals such as the URL, page title, and a small portion of visible text to determine whether the page appears to be a subscription sign-up or checkout flow for a service we recognize. This examination happens entirely within your browser. If the page does not appear to be a subscription flow, the script takes no action.</p>
+    <p><strong>Host permissions — narrow allowlist, not <code class="k">&lt;all_urls&gt;</code></strong></p>
+    <p>The extension declares a fixed allowlist of host permissions covering only the specific subscription services it supports — currently 24 domains, including <em>netflix.com</em>, <em>spotify.com</em>, <em>disneyplus.com</em>, <em>max.com</em>, <em>hbomax.com</em>, <em>hulu.com</em>, <em>primevideo.com</em>, <em>youtube.com</em>, <em>music.apple.com</em>, <em>tv.apple.com</em>, <em>chatgpt.com</em>, <em>openai.com</em>, <em>claude.ai</em>, <em>anthropic.com</em>, <em>notion.so</em>, <em>notion.com</em>, <em>grammarly.com</em>, <em>dropbox.com</em>, <em>1password.com</em>, <em>adobe.com</em>, <em>audible.com</em>, <em>nytimes.com</em>, <em>github.com</em>, and <em>figma.com</em>. Every host is enumerated explicitly in the published <code class="k">manifest.json</code> file in the source repository.</p>
+    <p>The browser itself enforces this list. Catchly cannot run on any site outside it — including your bank, brokerage, healthcare portal, payment processor, identity provider, employer SSO, or government login. That's a platform-level restriction in Chrome, not a "trust us" promise.</p>
+    <p>On the allowlisted services, the content script's only purpose is subscription detection. When you visit a recognized service, the script briefly examines signals such as the URL, page title, and a small portion of visible text to determine whether the page appears to be a subscription sign-up or checkout flow. This examination happens entirely within your browser. If the page does not appear to be a subscription flow, the script takes no action.</p>
     <p>The content script does not:</p>
     <ul>
       <li>Read or transmit the contents of forms you fill out</li>
@@ -1140,7 +1142,7 @@ h3.sub-title {
       <li>Transmit page content, URLs, or browsing patterns to any external server</li>
       <li>Track you across websites</li>
     </ul>
-    <p>We use broad host permissions because new subscription services launch constantly, and a fixed allow-list of supported sites would miss subscriptions on services we have not yet added. A future version of the extension may include a setting that allows you to disable the content script entirely while keeping the rest of the extension functional.</p>
+    <p>When a new subscription service is added to a future release, the host-permission allowlist is extended in that release's manifest and the change is visible as a diff in the public source repository. Adding a service is the only way Catchly can come to read pages on it.</p>
 
     <!-- 5. COOKIES -->
     <h2 class="s-title" id="cookies">5. Cookies and tracking technologies <a href="#cookies" class="hash" aria-label="Link to this section">#</a></h2>
