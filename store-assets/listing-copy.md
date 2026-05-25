@@ -3,226 +3,231 @@
 Paste these strings verbatim into the corresponding fields in the
 Chrome Web Store developer dashboard.
 
+> **Note on brand names.** The Web Store rejected our first
+> submission ("Yellow Argon" — Spam and Placement) because the
+> public-facing **Detailed description** field enumerated brand
+> names (Netflix, Spotify, etc.) as if for SEO. The new public
+> description below uses category descriptors only (streaming,
+> AI, productivity, news, design, storage). The non-public
+> **Permission justification** fields on the Privacy tab DO
+> still enumerate the 24 host domains by name — those are
+> reviewer-only fields, not displayed on the listing page, and
+> reviewers need the explicit list to verify the narrow
+> allowlist claim.
+
 ---
 
-## Short description (≤ 132 chars)
+## Short description (≤ 132 chars) — Store listing tab
 
+```
 Catch forgotten subscriptions, price hikes, and shadow charges — locally, in your browser. No bank login. No account.
+```
 
 *(119 characters)*
 
 ---
 
-## Detailed description (≤ 16 000 chars)
+## Detailed description (≤ 16 000 chars) — Store listing tab
 
-**Catchly is a privacy-first subscription tracker.**
+```
+The subscriptions you forgot about are the ones costing you the most.
 
-It catches the subscriptions you forgot you signed up for, warns
-you before a price hike or auto-renewal hits your card, and flags
-the services you haven't opened in weeks. It runs entirely inside
-your browser. There is no bank login, no required account, and no
-data leaves your device unless you explicitly opt in to a single,
-clearly-marked feature — the waitlist for the upcoming Gmail
-auto-scan, which only sends what you type into the email field.
+Catchly is a privacy-first subscription tracker that runs entirely inside your browser. It quietly watches signup confirmations, checkout pages, and renewal notices on the specific services it supports, then keeps a running list of every recurring charge it spots. There is no bank connection. There is no required account. Your subscription data never leaves your device.
 
----
+SINGLE PURPOSE
 
-**Why most subscription trackers are a bad trade.**
+Catchly does one thing: detect, track, and warn you about recurring charges — subscriptions, free trials, price hikes, and unused "shadow" services — locally, on the device you installed it on, with no backend that holds your data.
 
-Every other subscription tracker on the market asks you to hand
-over your bank credentials, your email inbox, or both. That is the
-business model — they're not selling you a feature, they're selling
-your transaction data to a data broker, or themselves becoming the
-broker. You save $12/month on a forgotten Hulu sub and pay for it
-with a permanent record of every place you swipe your card.
+WHAT CATCHLY CATCHES
 
-Catchly was built to skip that trade.
+- New subscription signups on supported streaming, AI, productivity, news, design, and storage services
+- Free trials about to convert to paid — with a 24-hour warning before the card is charged
+- Price hikes the moment they appear on a renewal page
+- "Shadow charges" — services you haven't opened in 30+ days that are still billing you
+- Annual renewals you'd otherwise forget until the charge hits your statement
+- Subscriptions you add manually in 10 seconds, for services Catchly can't auto-detect
 
-- **No bank login.** Catchly never asks for, never sees, and never
-  stores any payment credentials.
-- **No account.** There is no sign-up screen, no password, no
-  cloud profile. You install the extension and it works.
-- **Local-only.** All your data lives in `chrome.storage.local`
-  on your device. Catchly has no backend that holds your
-  subscriptions. There's nothing for us to hack, leak, or sell.
+WHY PEOPLE USE IT
 
----
+- One dashboard for every recurring charge you've signed up for, organized by next renewal
+- Renewal calendar so the next 30 days are never a surprise
+- Reminders configurable to 1, 3, or 7 days before a renewal, or all three at once
+- Spot price increases the day they happen, not on your next bank statement
+- Quick-link "Cancel this" buttons that jump straight to the cancellation page — no customer-service runarounds
+- Multi-currency support with separate totals so mixed-currency portfolios don't produce garbage numbers
+- Four themes (Editorial, Utility, Dark, System)
+- Manual entry, sample-data mode, and full JSON import/export — you own your data and can take it with you
 
-**What it actually does**
+PRIVACY THAT ACTUALLY MEANS SOMETHING
 
-✓ **Auto-detect at checkout.**
-When you land on a known subscription checkout page (Netflix,
-Spotify, ChatGPT Plus, Notion, etc. — 20+ services at launch and
-growing), a small toast slides in asking whether you want to
-track this. One click and it's saved. No click and it disappears.
-The page itself is parsed locally; nothing about your visit is
-sent anywhere.
+Catchly runs entirely on your device. Your subscription list, your usage data, and your visit history live in your browser's local storage and nowhere else. There is no analytics SDK, no crash reporter, no telemetry beacon, no error logger, and no usage ping anywhere in the codebase.
 
-✓ **Renewal warnings.**
-For every subscription you track, Catchly schedules a Chrome
-notification N days before it auto-renews. Default is 3 days; you
-can configure 1/3/7-day reminders, or several at once.
+Catchly can only run on a narrow allowlist of subscription services that the extension is designed to detect. Every host permission is enumerated explicitly in the published manifest.json file. The browser itself prevents Catchly from running on any other site, including banking, brokerage, healthcare, payment-processor, identity-provider, or government login pages. That's enforced by Chrome at the platform level — it's not a "trust us" promise.
 
-✓ **Free-trial countdown.**
-Mark a sub as a free trial and Catchly fires a separate, louder
-notification 24 hours before the trial ends so you can cancel
-before the card gets charged.
+THE ONE OPTIONAL OUTBOUND CALL
 
-✓ **Shadow-charge detection.**
-If you haven't visited a service's site in the configured window
-(default 30 days) and a renewal is coming up in the next 3 days,
-Catchly raises a "shadow charge" alert. This is the killer
-feature for catching the subs you genuinely forgot about — the
-streaming service you tried for one show two years ago and never
-opened again.
+If you click the "Notify me" button on the upcoming Gmail-auto-scan waitlist, your email address is sent to a Cloudflare Worker so we can email you when that feature launches. That is the only thing Catchly ever sends anywhere, it only fires when you explicitly type into the email field and click the button, and the email is the only piece of data transmitted.
 
-✓ **Price-hike alerts.**
-Bump a sub's price in the popup and Catchly logs the delta so you
-can see exactly how much your monthly subscription budget has
-crept up over time.
+Skip that field and the extension makes zero outbound calls during normal use.
 
-✓ **Renewal calendar.**
-The header calendar drawer shows every upcoming renewal in the
-next 30 days, day by day, with the total spend rolled up at the
-top.
+WHAT CATCHLY DOES NOT DO
 
-✓ **Insights and shadow-charges view.**
-Monthly spend totals, top categories, mixed-currency handling
-(USD + EUR + GBP shown separately so you don't get garbage
-totals), and a dedicated "haven't used in a while" list.
+✗ Does not connect to your bank
+✗ Does not read your inbox or email content
+✗ Does not require an account, password, or sign-up
+✗ Does not sync your subscription data to any server
+✗ Does not track you across sites
+✗ Does not run on banking, brokerage, healthcare, government, payment-processor, or authentication sites
+✗ Does not load brand logos from a third-party CDN — every icon is bundled inside the extension
+✗ Does not contain analytics SDKs, telemetry beacons, crash reporters, or error loggers
+✗ Does not execute remote code, dynamic scripts, or anything fetched at runtime
 
-✓ **Cancellation guidance.**
-Every sub's detail drawer has a "Cancel this" link that takes you
-to the service's actual cancellation page (not a customer-service
-runaround), where it exists.
+OPEN SOURCE — VERIFY EVERY CLAIM
 
-✓ **Manual entry, sample data, and full import/export.**
-Add a sub by hand in 10 seconds. Want to play with the UI before
-committing? Load sample data with one click. Want to back up?
-Export everything to a JSON file you control. Reimport on a new
-machine.
+The full source code is published on GitHub:
+https://github.com/Muzeeb1998/Catchly
 
-✓ **Four themes.**
-System (follows your OS), Editorial (calm cream + black),
-Utility (high-contrast yellow + ink), and Dark. Switch in one
-click — the transition crossfades smoothly.
+Every claim in this listing is verifiable in code.
+
+PRICING
+
+Catchly's core product is free, forever. There is no trial that converts. There is no feature behind a paywall that you need for the value proposition to work.
+
+ROADMAP
+
+The launch version covers manual + auto-detected tracking, renewal warnings, price-hike alerts, free-trial countdowns, shadow-charge detection, a renewal calendar, monthly/yearly spend insights, and one-click cancellation links. Coming next: Gmail auto-scan, a cancellation copilot for the top services, and family-plan splitting.
+
+Every future feature will follow the same rule: local-first, no data sold, no bank login required.
+
+SUPPORT
+
+Privacy questions: privacy@getcatchly.com
+General support: https://github.com/Muzeeb1998/Catchly/issues
+Website: https://getcatchly.com
+Privacy policy: https://getcatchly.com/privacy
+
+Install once. Browse the services you already use. Catchly handles the rest.
+```
 
 ---
 
-**Why "local-only" matters more than it sounds**
+## Privacy tab — Single purpose description (≤ 1 000 chars)
 
-Privacy claims are cheap. The hard part is *verifying* them.
-
-Catchly has exactly one outbound network call, and only if you
-choose to make it: clicking the "Notify me" button on the
-optional Gmail-auto-scan waitlist sends your email address to a
-Cloudflare Worker so we can email you when the feature launches.
-Nothing else is ever sent. Your subscriptions, your usage data,
-your visit history — none of it leaves your device. Ever.
-
-You don't have to trust us on this; you can verify it:
-
-1. Open Chrome's Developer Tools while the extension runs.
-2. Watch the Network tab.
-3. Use the extension normally — add a subscription, get a
-   notification, browse to a tracked service, switch themes.
-4. You will see zero outbound requests, because the only outbound
-   call is gated behind the "Notify me" button you have to
-   explicitly click.
-
-The full source code is on GitHub if you want to audit any of
-this for yourself:
-**https://github.com/Muzeeb1998/Catchly**
+```
+Catchly's single purpose is to help users track recurring subscription charges on a defined set of services without using a bank login, an account, or any cloud backend. The extension detects subscription sign-up and checkout pages on the 24 specific services listed in the manifest's host_permissions field, lets the user save the subscription to chrome.storage.local with one click, and surfaces local-only renewal reminders, free-trial countdowns, price-hike alerts, and "haven't used in a while" shadow-charge warnings. Nothing else.
+```
 
 ---
 
-**Permissions, explained in plain English**
+## Privacy tab — storage justification (≤ 1 000 chars)
 
-We ask for four permissions. Each one has a specific, narrow job.
-
-- `storage` — to save your subscriptions to
-  `chrome.storage.local`. Without this, the extension forgets
-  everything when you close Chrome.
-- `alarms` — to schedule renewal-warning notifications. Chrome
-  needs this to fire a notification at a future time.
-- `notifications` — to show those warnings.
-- `tabs` — to read the URL/title of the page you're on so we can
-  match it against the list of known subscription services
-  (Netflix, Spotify, etc.) and so the "how long since you last
-  visited" check works.
-- **Host permissions — narrow allowlist, not `<all_urls>`.**
-  Catchly only runs its content script on the 23 specific
-  subscription services it supports at launch: Netflix, Spotify,
-  Disney+, Max, Hulu, Prime Video, YouTube, Apple Music, Apple TV,
-  ChatGPT/OpenAI, Claude/Anthropic, Notion, Grammarly, Dropbox,
-  1Password, Adobe, Audible, New York Times, GitHub, and Figma.
-  Every host permission is enumerated in `manifest.json` — no
-  `<all_urls>`, no wildcard. Catchly cannot read, modify, or
-  observe any page outside this list.
-
-The narrow host-permission allowlist means Catchly literally
-*cannot* run on your bank, brokerage, healthcare, government,
-identity-provider, or any other site. The browser enforces this;
-it's not a trust-us promise. We add new services to the list in
-future versions only when there's user demand for them, and each
-new service is visible in the published manifest diff on GitHub.
+```
+The "storage" permission persists the user's saved subscription list, app settings, theme preference, usage history (for the "haven't visited in X days" shadow-charge feature), and pending-capture queue to chrome.storage.local on the user's device. Every value the extension reads or writes lives in chrome.storage.local — never chrome.storage.sync — so user data never leaves the device. The extension is non-functional without this permission: subscriptions would be forgotten on every popup close, alarms could not be scheduled, and theme preference could not be restored. Implementation in lib/storage.js — source at https://github.com/Muzeeb1998/Catchly.
+```
 
 ---
 
-**Privacy policy**
+## Privacy tab — alarms justification (≤ 1 000 chars)
 
-Full policy at **https://getcatchly.com/privacy**.
-
-Short version: we collect nothing. There is no analytics SDK, no
-crash reporter, no telemetry beacon, no error logger, no usage
-ping. If you sign up for the optional Gmail-auto-scan waitlist,
-we store your email address in a Cloudflare KV store keyed by
-timestamp — that's it.
+```
+The "alarms" permission schedules Chrome alarms that fire renewal reminder notifications at the user-configured offset before each subscription's next renewal (default 3 days; configurable to 1, 3, or 7 days, or any combination). Also used for the free-trial 24-hour-before-end alarm, a daily housekeeping alarm that runs the shadow-charge sweep and recomputes the action-icon badge, and an hourly badge-refresh alarm. There is no alternative MV3 API for scheduling background work at a future time — setTimeout does not survive service-worker termination. Used only by background.js.
+```
 
 ---
 
-**Roadmap**
+## Privacy tab — notifications justification (≤ 1 000 chars)
 
-The current launch covers manual + auto-detected tracking and
-local-only reminders. Coming up:
-
-- **Gmail auto-scan** — opt-in, on-device parsing of your inbox
-  to find every receipt-based subscription in 15 seconds. Click
-  "Notify me" in Settings to be emailed when it ships.
-- **Cancellation copilot** — guided 1-click cancellation for the
-  top 50 services.
-- **Family plan splitting** — track which subs are shared and
-  whose card they hit.
-
-All future features will follow the same rule: local-first, no
-data sold, no bank login.
+```
+The "notifications" permission displays Chrome desktop notifications when a subscription renewal is approaching, when a free trial is about to convert to paid, and when a shadow-charge sweep flags a subscription the user has not visited in the user-configured threshold of days (default 30). All notifications are generated and dispatched locally from the background service worker; the notification body never contains data fetched from a remote server. The user can disable any notification category in the Settings pane of the popup. Used only by background.js.
+```
 
 ---
 
-**Made by**
+## Privacy tab — tabs justification (≤ 1 000 chars)
 
-An indie developer who got tired of paying $9/month for a
-subscription tracker that wanted his bank password.
-
-Catchly is free forever for the core product. A paid Pro tier
-will eventually exist for the auto-scan + copilot features — it
-will be a flat monthly price, not a percentage of "savings."
+```
+The "tabs" permission is used for two purposes. First, chrome.tabs.create({ url, active: true }) opens the cancellation page for a subscription in a new tab when the user clicks "Cancel this" in the detail drawer, and opens the options/onboarding page on first install. Second, chrome.tabs.onUpdated reads the URL and title of the active tab when it finishes loading, to detect when the user visits a known subscription service — this powers the "haven't visited in X days" usage-tracking that the shadow-charge alert depends on. The match is performed locally against the merchant map in lib/merchants.js; nothing about the visit is transmitted.
+```
 
 ---
 
-**Support**
+## Privacy tab — Host permission justification (≤ 1 000 chars)
 
-- Source: https://github.com/Muzeeb1998/Catchly
-- Privacy questions: privacy@getcatchly.com
-- General: https://getcatchly.com
+> Reviewer-only field; not displayed on the public listing. Enumerating
+> the 24 domains here is required to demonstrate the narrow-allowlist
+> claim — not a spam violation.
+
+```
+host_permissions declares a fixed allowlist of 24 specific subscription-service domains: netflix.com, spotify.com, disneyplus.com, max.com, hbomax.com, hulu.com, primevideo.com, youtube.com, music.apple.com, tv.apple.com, chatgpt.com, openai.com, claude.ai, anthropic.com, notion.so, notion.com, grammarly.com, dropbox.com, 1password.com, adobe.com, audible.com, nytimes.com, github.com, figma.com. It is NOT <all_urls>. The content script (content.js) runs on these specific hosts to detect when the user lands on a subscription sign-up or checkout flow for a service Catchly recognizes — auto-detecting subscriptions at the moment of sign-up is the central value proposition. The browser enforces this allowlist at the platform level; Catchly cannot run on any other site, including banks, brokerages, healthcare, payment processors, identity providers, or government logins. Adding domains in future versions is visible as a manifest diff in the public source repository.
+```
+
+---
+
+## Privacy tab — Are you using remote code?
+
+**Select: `○ No, I am not using remote code`**
+
+Catchly bundles every JS file, every font, every brand icon. No external script tags, no CDN imports, no eval, no `new Function()`. The Cloudflare Worker call is data submission, not code execution.
+
+---
+
+## Privacy tab — Data usage section
+
+**Check exactly one box:**
+
+- ✅ **Personally identifiable information** (email — for the opt-in waitlist signup)
+
+**Leave all others unchecked.**
+
+**Check all three certifications:**
+
+- ✅ I do not sell or transfer user data to third parties, outside of the approved use cases
+- ✅ I do not use or transfer user data for purposes that are unrelated to my item's single purpose
+- ✅ I do not use or transfer user data to determine creditworthiness or for lending purposes
+
+---
+
+## Privacy policy URL
+
+```
+https://getcatchly.com/privacy
+```
+
+---
+
+## Store listing tab — additional fields
+
+| Field | Value |
+|---|---|
+| Homepage URL | `https://getcatchly.com` |
+| Support URL | `https://github.com/Muzeeb1998/Catchly/issues` |
 
 ---
 
 ## Category
 
 - **Primary:** Productivity
-- **Secondary suggestion:** Tools / Workflow & Planning
 
 ## Language
 
 English (only supported language at launch)
+
+---
+
+## Test instructions tab
+
+**Credentials:** leave blank (Catchly has no login).
+
+**Additional instructions (≤ 500 chars):**
+
+```
+Catchly has no login, no account, and no required setup — open the toolbar icon and you're in the dashboard.
+
+Fastest path to verify functionality:
+1. Click the Catchly icon → 3-screen onboarding shows on first run.
+2. Settings tab → "Load sample data" populates the dashboard with example subs.
+3. Visit netflix.com/signup/planform — the in-page detection toast appears.
+4. Header calendar icon → 30-day renewal calendar drawer.
+
+Source: https://github.com/Muzeeb1998/Catchly
+```
